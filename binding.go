@@ -17,6 +17,7 @@ import (
 /*
 #cgo LDFLAGS: -Llibimagequant/imagequant-sys -limagequant
 #cgo linux LDFLAGS: -lm -ldl
+#cgo darwin LDFLAGS: -lm
 #cgo windows LDFLAGS: -lpthread -lgcc -lwsock32 -lws2_32 -lbcrypt -lntdll -luserenv
 #include <libimagequant/imagequant-sys/libimagequant.h>
 */
