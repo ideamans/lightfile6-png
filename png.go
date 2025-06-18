@@ -102,7 +102,8 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 		// Set quantize error and continue with stripped data
 		output.PNGQuantError = err
 	} else {
-		psnr, err := PngPsnr(beforePNGQuant, quantizedData)
+		psnr, psnrErr := PngPsnr(beforePNGQuant, quantizedData)
+		err = psnrErr
 		if err != nil {
 			return nil, NewDataErrorf("failed to calculate PSNR after quantization: %v", err)
 		}
@@ -157,7 +158,7 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 	}
 
 	// Write the optimized PNG to destination path
-	err = os.WriteFile(input.DestPath, pngData, 0644)
+	err = os.WriteFile(input.DestPath, pngData, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write optimized PNG: %w", err)
 	}

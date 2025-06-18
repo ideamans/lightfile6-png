@@ -244,7 +244,7 @@ func TestOptimize(t *testing.T) {
 			}
 
 			// Verify file was written
-			if _, err := os.Stat(destPath); os.IsNotExist(err) {
+			if _, statErr := os.Stat(destPath); os.IsNotExist(statErr) {
 				t.Error("Output file was not created")
 			}
 

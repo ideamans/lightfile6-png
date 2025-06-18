@@ -19,3 +19,7 @@ clean:
 	HERE=$(PWD)
 	cd $(IMAGEQUANT_SYS) && make clean
 	go clean -cache -testcache
+
+.PHPONY: test
+test: $(LIBIMAGEQUANT)
+	go test -v ./...

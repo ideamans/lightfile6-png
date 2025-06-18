@@ -1,7 +1,6 @@
 package png
 
 import (
-	"bytes"
 	"encoding/binary"
 	"image"
 	"image/png"
@@ -26,7 +25,7 @@ func checkColorType(t *testing.T, filePath string) string {
 	}
 
 	// First check concrete image type
-	switch img.(type) {
+	switch img := img.(type) {
 	case *image.Gray:
 		return "Grayscale"
 	case *image.Gray16:
@@ -36,7 +35,7 @@ func checkColorType(t *testing.T, filePath string) string {
 	case *image.NRGBA:
 		// NRGBA can be either RGBA or Grayscale+Alpha
 		// Need to check if it's actually grayscale
-		if isGrayscaleImage(img.(*image.NRGBA)) {
+		if isGrayscaleImage(img) {
 			return "Grayscale+Alpha"
 		}
 		return "RGBA"
@@ -61,44 +60,33 @@ func checkBitDepth(t *testing.T, filePath string) int {
 	defer file.Close()
 
 	// PNG signature をスキップ
-	file.Seek(8, 0)
+	if _, err := file.Seek(8, 0); err != nil {
+		return -1
+	}
 
 	// IHDRチャンクを読む
 	var chunkLength uint32
-	binary.Read(file, binary.BigEndian, &chunkLength)
+	if err := binary.Read(file, binary.BigEndian, &chunkLength); err != nil {
+		return -1
+	}
 
 	var chunkType [4]byte
-	file.Read(chunkType[:])
+	if _, err := file.Read(chunkType[:]); err != nil {
+		return -1
+	}
 
 	if string(chunkType[:]) == "IHDR" {
 		// IHDRデータを読む
 		ihdrData := make([]byte, 13)
-		file.Read(ihdrData)
+		if _, err := file.Read(ihdrData); err != nil {
+			return -1
+		}
 
 		// ビット深度は8バイト目
 		return int(ihdrData[8])
 	}
 
 	return -1
-}
-
-// checkCompressionLevelはPNGファイルの圧縮レベルを推測します
-func checkCompressionLevel(t *testing.T, filePath string) string {
-	info, err := os.Stat(filePath)
-	if err != nil {
-		t.Logf("Failed to stat file %s: %v", filePath, err)
-		return "Unknown"
-	}
-
-	// ファイルサイズに基づいて推測（簡略化）
-	size := info.Size()
-	if size < 1000 {
-		return "High"
-	} else if size < 5000 {
-		return "Medium"
-	} else {
-		return "Low"
-	}
 }
 
 // checkInterlaceはPNGファイルがインターレース方式を使用しているかを判定します
@@ -111,19 +99,27 @@ func checkInterlace(t *testing.T, filePath string) string {
 	defer file.Close()
 
 	// PNG signature をスキップ
-	file.Seek(8, 0)
+	if _, err := file.Seek(8, 0); err != nil {
+		return "Unknown"
+	}
 
 	// IHDRチャンクを読む
 	var chunkLength uint32
-	binary.Read(file, binary.BigEndian, &chunkLength)
+	if err := binary.Read(file, binary.BigEndian, &chunkLength); err != nil {
+		return "Unknown"
+	}
 
 	var chunkType [4]byte
-	file.Read(chunkType[:])
+	if _, err := file.Read(chunkType[:]); err != nil {
+		return "Unknown"
+	}
 
 	if string(chunkType[:]) == "IHDR" {
 		// IHDRデータを読む
 		ihdrData := make([]byte, 13)
-		file.Read(ihdrData)
+		if _, err := file.Read(ihdrData); err != nil {
+			return "Unknown"
+		}
 
 		// インターレース方式は12バイト目
 		interlace := ihdrData[12]
@@ -147,7 +143,9 @@ func hasTRNSChunk(t *testing.T, filePath string) bool {
 	defer file.Close()
 
 	// Skip PNG signature
-	file.Seek(8, 0)
+	if _, err := file.Seek(8, 0); err != nil {
+		return false
+	}
 
 	// Read chunks until we find tRNS or reach end
 	for {
@@ -169,7 +167,9 @@ func hasTRNSChunk(t *testing.T, filePath string) bool {
 		}
 
 		// Skip chunk data + CRC (4 bytes)
-		file.Seek(int64(chunkLength)+4, 1)
+		if _, err := file.Seek(int64(chunkLength)+4, 1); err != nil {
+			break
+		}
 	}
 
 	return false
@@ -185,7 +185,9 @@ func checkChunkPresence(t *testing.T, filePath string, targetChunk string) bool 
 	defer file.Close()
 
 	// Skip PNG signature
-	file.Seek(8, 0)
+	if _, err := file.Seek(8, 0); err != nil {
+		return false
+	}
 
 	// Read chunks
 	for {
@@ -207,57 +209,12 @@ func checkChunkPresence(t *testing.T, filePath string, targetChunk string) bool 
 		}
 
 		// Skip chunk data + CRC (4 bytes)
-		file.Seek(int64(chunkLength)+4, 1)
-	}
-
-	return false
-}
-
-// checkMetadataTypeはPNGファイルのメタデータタイプを判定します
-func checkMetadataType(t *testing.T, filePath string) string {
-	hasText := checkChunkPresence(t, filePath, "tEXt")
-	hasZText := checkChunkPresence(t, filePath, "zTXt")
-	hasIText := checkChunkPresence(t, filePath, "iTXt")
-
-	if !hasText && !hasZText && !hasIText {
-		return "None"
-	} else if hasText && !hasZText && !hasIText {
-		return "Text"
-	} else if hasZText {
-		return "Compressed"
-	} else if hasIText {
-		return "International"
-	} else {
-		return "Mixed"
-	}
-}
-
-// checkFilterMethodはPNGファイルのフィルタ方式を推測します
-func checkFilterMethod(t *testing.T, filePath string) string {
-	// PNGファイルのサイズとパターンに基づいて推測
-	// 実際のフィルタ方式の検出は複雑なため、ここでは簡略化
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return "Unknown"
-	}
-
-	// IDATチャンクのパターンを分析する簡略化されたロジック
-	if bytes.Contains(data, []byte("IDAT")) {
-		// ファイル名に基づいて推測
-		if bytes.Contains([]byte(filePath), []byte("none")) {
-			return "None"
-		} else if bytes.Contains([]byte(filePath), []byte("sub")) {
-			return "Sub"
-		} else if bytes.Contains([]byte(filePath), []byte("up")) {
-			return "Up"
-		} else if bytes.Contains([]byte(filePath), []byte("average")) {
-			return "Average"
-		} else if bytes.Contains([]byte(filePath), []byte("paeth")) {
-			return "Paeth"
+		if _, err := file.Seek(int64(chunkLength)+4, 1); err != nil {
+			break
 		}
 	}
 
-	return "Mixed"
+	return false
 }
 
 // isGrayscaleImage checks if an NRGBA image is actually grayscale

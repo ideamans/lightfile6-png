@@ -3,6 +3,15 @@ package png
 //go:generate git submodule update --init --recursive
 //go:generate make
 
+/*
+#cgo LDFLAGS: -Llibimagequant/imagequant-sys -limagequant
+#cgo linux LDFLAGS: -lm -ldl
+#cgo darwin LDFLAGS: -lm
+#cgo windows LDFLAGS: -lpthread -lgcc -lwsock32 -lws2_32 -lbcrypt -lntdll -luserenv
+#include <libimagequant/imagequant-sys/libimagequant.h>
+*/
+import "C"
+
 import (
 	"bytes"
 	"fmt"
@@ -13,15 +22,6 @@ import (
 
 	"github.com/ideamans/go-l10n"
 )
-
-/*
-#cgo LDFLAGS: -Llibimagequant/imagequant-sys -limagequant
-#cgo linux LDFLAGS: -lm -ldl
-#cgo darwin LDFLAGS: -lm
-#cgo windows LDFLAGS: -lpthread -lgcc -lwsock32 -lws2_32 -lbcrypt -lntdll -luserenv
-#include <libimagequant/imagequant-sys/libimagequant.h>
-*/
-import "C"
 
 func init() {
 	// Register Japanese translations for this file

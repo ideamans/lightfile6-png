@@ -28,7 +28,10 @@ func ReadComment(data []byte) (*LightFileComment, string, error) {
 		return nil, "", NewDataErrorf("failed to parse PNG structure: %v", err)
 	}
 
-	cs := mediaContext.(*pngstructure.ChunkSlice)
+	cs, ok := mediaContext.(*pngstructure.ChunkSlice)
+	if !ok {
+		return nil, "", NewDataError("unexpected media context type")
+	}
 	chunks := cs.Chunks()
 
 	for _, chunk := range chunks {
@@ -95,7 +98,10 @@ func WriteComment(data []byte, comment string) ([]byte, error) {
 	copy(textData[len(keyword)+1:], comment)
 
 	// Find where to insert the tEXt chunk (before IEND)
-	cs := mediaContext.(*pngstructure.ChunkSlice)
+	cs, ok := mediaContext.(*pngstructure.ChunkSlice)
+	if !ok {
+		return nil, NewDataError("unexpected media context type")
+	}
 	chunks := cs.Chunks()
 	newChunks := make([]*pngstructure.Chunk, 0, len(chunks)+1)
 

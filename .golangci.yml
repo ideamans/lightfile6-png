@@ -1,0 +1,69 @@
+linters:
+  enable:
+    - gofmt
+    - goimports
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - typecheck
+    - bodyclose
+    - gosec
+    - misspell
+    - nakedret
+    - prealloc
+    - exportloopref
+
+  disable:
+    - funlen # Many test functions are naturally long
+    - gocognit
+    - gocyclo
+    - dupl
+    - goconst
+    - testpackage # We use same package for tests
+    - paralleltest # Not all tests need to be parallel
+    - thelper # Helper functions don't always need t.Helper()
+    - wrapcheck # We handle error wrapping appropriately
+    - varnamelen # Short variable names are fine in small scopes
+    - gci # Import ordering is handled by goimports
+    - gocritic # Too many opinionated style checks
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  gosec:
+    severity: medium
+    confidence: medium
+  staticcheck:
+    checks: ["all", "-SA5011"] # Disable nil check after nil check
+
+issues:
+  exclude-rules:
+    # Exclude long functions in tests
+    - path: _test\.go
+      linters:
+        - funlen
+        - gocognit
+        - gocyclo
+        - goerr113
+        - dupl
+        - maintidx
+
+    # Exclude nil pointer dereference after explicit nil check
+    - path: comment_test\.go
+      linters:
+        - staticcheck
+      text: "SA5011"
+
+    # Allow naked returns in short functions
+    - linters:
+        - nakedret
+      source: "^func.*\\(.*\\).*\\{[^}]*\\}$"
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
