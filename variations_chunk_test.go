@@ -22,8 +22,8 @@ func TestChunk(t *testing.T) {
 			name:               "Gamma correction",
 			file:               "chunk_gamma.png",
 			expectError:        false, // Should succeed
-			expectGamma:        false,                  // Actually has bKGD, not gAMA
-			expectBackground:   true,                   // Has bKGD chunk instead
+			expectGamma:        false, // Actually has bKGD, not gAMA
+			expectBackground:   true,  // Has bKGD chunk instead
 			expectTransparency: false,
 			description:        "PNG with gamma correction information (gAMA chunk)",
 		},
@@ -94,63 +94,63 @@ func TestChunk(t *testing.T) {
 			t.Logf("PSNR: %.2f, PNGQuant: %v", result.FinalPSNR, result.PNGQuant.Applied)
 
 			// Check chunk preservation
-				// Check that output file exists
-				if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-					t.Error("Output file was not created")
-					return
-				}
+			// Check that output file exists
+			if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+				t.Error("Output file was not created")
+				return
+			}
 
-				// Check ancillary chunks in optimized file
-				optimizedGamma, optimizedBackground, optimizedTransparency := checkAncillaryChunks(t, outputPath)
-				t.Logf("Optimized file chunks: gAMA=%v, bKGD=%v, tRNS=%v", optimizedGamma, optimizedBackground, optimizedTransparency)
+			// Check ancillary chunks in optimized file
+			optimizedGamma, optimizedBackground, optimizedTransparency := checkAncillaryChunks(t, outputPath)
+			t.Logf("Optimized file chunks: gAMA=%v, bKGD=%v, tRNS=%v", optimizedGamma, optimizedBackground, optimizedTransparency)
 
-				// Check chunk preservation/removal
-				if originalGamma && !optimizedGamma {
-					t.Logf("gAMA chunk was removed during optimization")
-				} else if originalGamma && optimizedGamma {
-					t.Logf("gAMA chunk was preserved during optimization")
-				} else if !originalGamma && optimizedGamma {
-					t.Logf("gAMA chunk was added during optimization (unexpected)")
-				}
+			// Check chunk preservation/removal
+			if originalGamma && !optimizedGamma {
+				t.Logf("gAMA chunk was removed during optimization")
+			} else if originalGamma && optimizedGamma {
+				t.Logf("gAMA chunk was preserved during optimization")
+			} else if !originalGamma && optimizedGamma {
+				t.Logf("gAMA chunk was added during optimization (unexpected)")
+			}
 
-				if originalBackground && !optimizedBackground {
-					t.Logf("bKGD chunk was removed during optimization")
-				} else if originalBackground && optimizedBackground {
-					t.Logf("bKGD chunk was preserved during optimization")
-				} else if !originalBackground && optimizedBackground {
-					t.Logf("bKGD chunk was added during optimization (unexpected)")
-				}
+			if originalBackground && !optimizedBackground {
+				t.Logf("bKGD chunk was removed during optimization")
+			} else if originalBackground && optimizedBackground {
+				t.Logf("bKGD chunk was preserved during optimization")
+			} else if !originalBackground && optimizedBackground {
+				t.Logf("bKGD chunk was added during optimization (unexpected)")
+			}
 
-				if originalTransparency && !optimizedTransparency {
-					t.Logf("tRNS chunk was removed during optimization")
-				} else if originalTransparency && optimizedTransparency {
-					t.Logf("tRNS chunk was preserved during optimization")
-				} else if !originalTransparency && optimizedTransparency {
-					t.Logf("tRNS chunk was added during optimization (unexpected)")
-				}
+			if originalTransparency && !optimizedTransparency {
+				t.Logf("tRNS chunk was removed during optimization")
+			} else if originalTransparency && optimizedTransparency {
+				t.Logf("tRNS chunk was preserved during optimization")
+			} else if !originalTransparency && optimizedTransparency {
+				t.Logf("tRNS chunk was added during optimization (unexpected)")
+			}
 
-				// Log chunk preservation summary
-				gammaPreserved := (originalGamma && optimizedGamma) || (!originalGamma && !optimizedGamma)
-				backgroundPreserved := (originalBackground && optimizedBackground) || (!originalBackground && !optimizedBackground)
-				transparencyPreserved := (originalTransparency && optimizedTransparency) || (!originalTransparency && !optimizedTransparency)
-				t.Logf("Chunk preservation: gAMA=%v, bKGD=%v, tRNS=%v", gammaPreserved, backgroundPreserved, transparencyPreserved)
+			// Log chunk preservation summary
+			gammaPreserved := (originalGamma && optimizedGamma) || (!originalGamma && !optimizedGamma)
+			backgroundPreserved := (originalBackground && optimizedBackground) || (!originalBackground && !optimizedBackground)
+			transparencyPreserved := (originalTransparency && optimizedTransparency) || (!originalTransparency && !optimizedTransparency)
+			t.Logf("Chunk preservation: gAMA=%v, bKGD=%v, tRNS=%v", gammaPreserved, backgroundPreserved, transparencyPreserved)
 
-				// Log compression details
-				if result.BeforeSize > 0 {
-					compressionRatio := float64(result.BeforeSize-result.AfterSize) / float64(result.BeforeSize) * 100
-					t.Logf("Compression: %.1f%% reduction", compressionRatio)
-				}
+			// Log compression details
+			if result.BeforeSize > 0 {
+				compressionRatio := float64(result.BeforeSize-result.AfterSize) / float64(result.BeforeSize) * 100
+				t.Logf("Compression: %.1f%% reduction", compressionRatio)
+			}
 
-				// Analyze chunk-specific implications
-				if originalGamma {
-					t.Logf("Gamma correction: Important for proper color display across devices")
-				}
-				if originalBackground {
-					t.Logf("Background color: Fallback color for transparent areas")
-				}
-				if originalTransparency {
-					t.Logf("Transparency chunk: Defines transparent colors for non-alpha color types")
-				}
+			// Analyze chunk-specific implications
+			if originalGamma {
+				t.Logf("Gamma correction: Important for proper color display across devices")
+			}
+			if originalBackground {
+				t.Logf("Background color: Fallback color for transparent areas")
+			}
+			if originalTransparency {
+				t.Logf("Transparency chunk: Defines transparent colors for non-alpha color types")
+			}
 		})
 	}
 }
@@ -160,7 +160,7 @@ func checkAncillaryChunks(t *testing.T, filePath string) (hasGamma bool, hasBack
 	hasGamma = checkChunkPresence(t, filePath, "gAMA")
 	hasBackground = checkChunkPresence(t, filePath, "bKGD")
 	hasTransparency = checkChunkPresence(t, filePath, "tRNS")
-	
+
 	if hasGamma {
 		t.Logf("Found gAMA chunk in %s", filepath.Base(filePath))
 	}
@@ -170,6 +170,6 @@ func checkAncillaryChunks(t *testing.T, filePath string) (hasGamma bool, hasBack
 	if hasTransparency {
 		t.Logf("Found tRNS chunk in %s", filepath.Base(filePath))
 	}
-	
+
 	return hasGamma, hasBackground, hasTransparency
 }

@@ -40,7 +40,7 @@ func TestMetadata(t *testing.T) {
 			name:                "Compressed text metadata",
 			file:                "metadata_compressed.png",
 			expectError:         false, // Should succeed
-			expectText:          true,                   // Actually has tEXt chunks too
+			expectText:          true,  // Actually has tEXt chunks too
 			expectCompressed:    true,
 			expectInternational: false,
 			description:         "PNG with zTXt chunks (compressed text)",
@@ -49,9 +49,9 @@ func TestMetadata(t *testing.T) {
 			name:                "International text metadata",
 			file:                "metadata_international.png",
 			expectError:         false, // Should succeed
-			expectText:          true,                   // Actually has tEXt chunks
-			expectCompressed:    true,                   // Actually has zTXt chunks
-			expectInternational: false,                  // Doesn't have iTXt chunks
+			expectText:          true,  // Actually has tEXt chunks
+			expectCompressed:    true,  // Actually has zTXt chunks
+			expectInternational: false, // Doesn't have iTXt chunks
 			description:         "PNG with iTXt chunks (international text, UTF-8)",
 		},
 	}
@@ -103,46 +103,46 @@ func TestMetadata(t *testing.T) {
 			t.Logf("PSNR: %.2f, PNGQuant: %v", result.FinalPSNR, result.PNGQuant.Applied)
 
 			// Check metadata preservation
-				// Check that output file exists
-				if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-					t.Error("Output file was not created")
-					return
-				}
+			// Check that output file exists
+			if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+				t.Error("Output file was not created")
+				return
+			}
 
-				// Check metadata in optimized file
-				optimizedText, optimizedCompressed, optimizedInternational := checkMetadata(t, outputPath)
-				t.Logf("Optimized file metadata: tEXt=%v, zTXt=%v, iTXt=%v", optimizedText, optimizedCompressed, optimizedInternational)
+			// Check metadata in optimized file
+			optimizedText, optimizedCompressed, optimizedInternational := checkMetadata(t, outputPath)
+			t.Logf("Optimized file metadata: tEXt=%v, zTXt=%v, iTXt=%v", optimizedText, optimizedCompressed, optimizedInternational)
 
-				// Check metadata preservation/removal
-				if originalText && !optimizedText {
-					t.Logf("tEXt metadata was removed during optimization")
-				} else if originalText && optimizedText {
-					t.Logf("tEXt metadata was preserved during optimization")
-				} else if !originalText && optimizedText {
-					t.Logf("tEXt metadata was added during optimization (unexpected)")
-				}
+			// Check metadata preservation/removal
+			if originalText && !optimizedText {
+				t.Logf("tEXt metadata was removed during optimization")
+			} else if originalText && optimizedText {
+				t.Logf("tEXt metadata was preserved during optimization")
+			} else if !originalText && optimizedText {
+				t.Logf("tEXt metadata was added during optimization (unexpected)")
+			}
 
-				if originalCompressed && !optimizedCompressed {
-					t.Logf("zTXt metadata was removed during optimization")
-				} else if originalCompressed && optimizedCompressed {
-					t.Logf("zTXt metadata was preserved during optimization")
-				} else if !originalCompressed && optimizedCompressed {
-					t.Logf("zTXt metadata was added during optimization (unexpected)")
-				}
+			if originalCompressed && !optimizedCompressed {
+				t.Logf("zTXt metadata was removed during optimization")
+			} else if originalCompressed && optimizedCompressed {
+				t.Logf("zTXt metadata was preserved during optimization")
+			} else if !originalCompressed && optimizedCompressed {
+				t.Logf("zTXt metadata was added during optimization (unexpected)")
+			}
 
-				if originalInternational && !optimizedInternational {
-					t.Logf("iTXt metadata was removed during optimization")
-				} else if originalInternational && optimizedInternational {
-					t.Logf("iTXt metadata was preserved during optimization")
-				} else if !originalInternational && optimizedInternational {
-					t.Logf("iTXt metadata was added during optimization (could be optimization tool signature)")
-				}
+			if originalInternational && !optimizedInternational {
+				t.Logf("iTXt metadata was removed during optimization")
+			} else if originalInternational && optimizedInternational {
+				t.Logf("iTXt metadata was preserved during optimization")
+			} else if !originalInternational && optimizedInternational {
+				t.Logf("iTXt metadata was added during optimization (could be optimization tool signature)")
+			}
 
-				// Log metadata preservation summary
-				textPreserved := (originalText && optimizedText) || (!originalText && !optimizedText)
-				compressedPreserved := (originalCompressed && optimizedCompressed) || (!originalCompressed && !optimizedCompressed)
-				internationalPreserved := (originalInternational && optimizedInternational) || (!originalInternational && !optimizedInternational)
-				t.Logf("Metadata preservation: tEXt=%v, zTXt=%v, iTXt=%v", textPreserved, compressedPreserved, internationalPreserved)
+			// Log metadata preservation summary
+			textPreserved := (originalText && optimizedText) || (!originalText && !optimizedText)
+			compressedPreserved := (originalCompressed && optimizedCompressed) || (!originalCompressed && !optimizedCompressed)
+			internationalPreserved := (originalInternational && optimizedInternational) || (!originalInternational && !optimizedInternational)
+			t.Logf("Metadata preservation: tEXt=%v, zTXt=%v, iTXt=%v", textPreserved, compressedPreserved, internationalPreserved)
 
 			// Log compression details
 			if result.BeforeSize > 0 {
@@ -158,7 +158,7 @@ func checkMetadata(t *testing.T, filePath string) (hasText bool, hasCompressed b
 	hasText = checkChunkPresence(t, filePath, "tEXt")
 	hasCompressed = checkChunkPresence(t, filePath, "zTXt")
 	hasInternational = checkChunkPresence(t, filePath, "iTXt")
-	
+
 	if hasText {
 		t.Logf("Found tEXt chunk in %s", filepath.Base(filePath))
 	}
@@ -168,6 +168,6 @@ func checkMetadata(t *testing.T, filePath string) (hasText bool, hasCompressed b
 	if hasInternational {
 		t.Logf("Found iTXt chunk in %s", filepath.Base(filePath))
 	}
-	
+
 	return hasText, hasCompressed, hasInternational
 }

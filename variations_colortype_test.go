@@ -33,7 +33,7 @@ func TestColortype(t *testing.T) {
 		{
 			name:              "RGB",
 			file:              "colortype_rgb.png",
-			expectError:       false, // Should succeed with RGB optimization
+			expectError:       false,  // Should succeed with RGB optimization
 			originalColorType: "RGBA", // Go decodes as RGBA even without alpha
 			description:       "RGB PNG without alpha channel",
 		},
@@ -47,7 +47,7 @@ func TestColortype(t *testing.T) {
 		{
 			name:              "Grayscale + Alpha",
 			file:              "colortype_grayscale_alpha.png",
-			expectError:       false, // Should succeed with grayscale+alpha optimization
+			expectError:       false,             // Should succeed with grayscale+alpha optimization
 			originalColorType: "Grayscale+Alpha", // May be decoded as RGBA or Grayscale+Alpha
 			description:       "Grayscale PNG with alpha channel",
 		},
@@ -94,22 +94,22 @@ func TestColortype(t *testing.T) {
 			t.Logf("PSNR: %.2f, PNGQuant: %v", result.FinalPSNR, result.PNGQuant.Applied)
 
 			// Check color type preservation
-				// Check that output file exists
-				if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-					t.Error("Output file was not created")
-					return
-				}
+			// Check that output file exists
+			if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+				t.Error("Output file was not created")
+				return
+			}
 
-				// Check color type in optimized file
-				optimizedColorType := checkColorType(t, outputPath)
-				t.Logf("Optimized file color type: %s", optimizedColorType)
+			// Check color type in optimized file
+			optimizedColorType := checkColorType(t, outputPath)
+			t.Logf("Optimized file color type: %s", optimizedColorType)
 
-				// Log color type conversion
-				if originalColorType != optimizedColorType {
-					t.Logf("Color type conversion: %s -> %s", originalColorType, optimizedColorType)
-				} else {
-					t.Logf("Color type preserved: %s", originalColorType)
-				}
+			// Log color type conversion
+			if originalColorType != optimizedColorType {
+				t.Logf("Color type conversion: %s -> %s", originalColorType, optimizedColorType)
+			} else {
+				t.Logf("Color type preserved: %s", originalColorType)
+			}
 
 			// Log compression details
 			if result.BeforeSize > 0 && result.AfterSize > 0 {
@@ -119,4 +119,3 @@ func TestColortype(t *testing.T) {
 		})
 	}
 }
-

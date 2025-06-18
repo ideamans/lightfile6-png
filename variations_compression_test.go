@@ -100,7 +100,7 @@ func TestCompression(t *testing.T) {
 			// Log quality metrics
 			t.Logf("Successfully optimized with PSNR: %.2f", result.FinalPSNR)
 
-				// Check quality retention
+			// Check quality retention
 			if result.FinalPSNR < 35.0 {
 				t.Logf("Note: Lower PSNR indicates more aggressive optimization")
 			} else {

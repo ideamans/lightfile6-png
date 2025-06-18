@@ -11,19 +11,19 @@ func TestOptimize(t *testing.T) {
 	tempDir := t.TempDir()
 
 	testCases := []struct {
-		name                      string
-		inputFile                 string
-		quality                   string
-		expectAlreadyOptimized    bool
-		expectStripError          bool
-		expectPNGQuantError       bool
-		expectPNGQuantApplied     bool
-		expectCantOptimize        bool
-		expectInspectionFailed    bool
-		expectError               bool
-		minPNGQuantPSNR           float64
-		minFinalPSNR              float64
-		maxAfterSize              int64
+		name                   string
+		inputFile              string
+		quality                string
+		expectAlreadyOptimized bool
+		expectStripError       bool
+		expectPNGQuantError    bool
+		expectPNGQuantApplied  bool
+		expectCantOptimize     bool
+		expectInspectionFailed bool
+		expectError            bool
+		minPNGQuantPSNR        float64
+		minFinalPSNR           float64
+		maxAfterSize           int64
 	}{
 		{
 			name:                  "Normal optimization with default quality",
@@ -73,7 +73,7 @@ func TestOptimize(t *testing.T) {
 			quality:                "high",
 			expectPNGQuantApplied:  true,  // Actually gets applied because PSNR is 27.9
 			expectInspectionFailed: false, // Only fails final inspection if < 35
-			minFinalPSNR:          45.0,   // Final PSNR is higher due to no PNGQuant
+			minFinalPSNR:           45.0,  // Final PSNR is higher due to no PNGQuant
 		},
 		{
 			name:      "PNG with metadata to strip",
@@ -90,10 +90,10 @@ func TestOptimize(t *testing.T) {
 			expectError: true,
 		},
 		{
-			name:                "JPEG disguised as PNG",
-			inputFile:           "testdata/optimize/jpeg.png",
-			quality:             "",
-			expectError:         true, // PNG parsing will fail early
+			name:        "JPEG disguised as PNG",
+			inputFile:   "testdata/optimize/jpeg.png",
+			quality:     "",
+			expectError: true, // PNG parsing will fail early
 		},
 	}
 
@@ -108,7 +108,7 @@ func TestOptimize(t *testing.T) {
 				// First optimize a file to create "already optimized" state
 				setupSrc := "testdata/optimize/psnr-will-50.png"
 				tmpOptimized := filepath.Join(tempDir, "already-optimized.png")
-				
+
 				result, err := Optimize(OptimizePngInput{
 					SrcPath:  setupSrc,
 					DestPath: tmpOptimized,
@@ -120,7 +120,7 @@ func TestOptimize(t *testing.T) {
 				if result.AlreadyOptimized {
 					t.Fatal("Setup file was already optimized")
 				}
-				
+
 				// Use the optimized file as source
 				srcPath = tmpOptimized
 			}
@@ -173,8 +173,8 @@ func TestOptimize(t *testing.T) {
 			}
 
 			if result.Strip != nil && !tc.expectStripError {
-				t.Logf("Strip result: Total removed=%d bytes, TextChunks=%d, TimeChunk=%d, ExifData=%d", 
-					result.Strip.Total, 
+				t.Logf("Strip result: Total removed=%d bytes, TextChunks=%d, TimeChunk=%d, ExifData=%d",
+					result.Strip.Total,
 					result.Strip.Removed.TextChunks,
 					result.Strip.Removed.TimeChunk,
 					result.Strip.Removed.ExifData)
@@ -289,9 +289,9 @@ func TestOptimize_PSNRQualityLevels(t *testing.T) {
 		expectReject bool
 	}{
 		{"high", 45.0, false},
-		{"", 42.0, false},     // default
+		{"", 42.0, false}, // default
 		{"low", 39.0, false},
-		{"force", 0, false},   // accepts any PSNR
+		{"force", 0, false}, // accepts any PSNR
 	}
 
 	for _, q := range qualities {
@@ -309,7 +309,7 @@ func TestOptimize_PSNRQualityLevels(t *testing.T) {
 
 			if result.PNGQuant.Applied {
 				if q.minPSNR > 0 && result.PNGQuant.PSNR < q.minPSNR {
-					t.Errorf("PNGQuant.PSNR = %v, want >= %v for quality %s", 
+					t.Errorf("PNGQuant.PSNR = %v, want >= %v for quality %s",
 						result.PNGQuant.PSNR, q.minPSNR, q.quality)
 				}
 			}
@@ -376,7 +376,7 @@ func TestIsAcceptablePSNR(t *testing.T) {
 		t.Run(tc.quality+"_"+string(rune(int(tc.psnr))), func(t *testing.T) {
 			result := isAcceptablePSNR(tc.quality, tc.psnr)
 			if result != tc.expected {
-				t.Errorf("isAcceptablePSNR(%s, %f) = %v, want %v", 
+				t.Errorf("isAcceptablePSNR(%s, %f) = %v, want %v",
 					tc.quality, tc.psnr, result, tc.expected)
 			}
 		})
@@ -411,7 +411,7 @@ func TestOptimize_StripMetadata(t *testing.T) {
 		if result.Strip.Total == 0 {
 			t.Error("Expected some metadata to be removed")
 		}
-		t.Logf("Removed metadata: Total=%d bytes, TextChunks=%d, TimeChunk=%d, ExifData=%d, OtherChunks=%d", 
+		t.Logf("Removed metadata: Total=%d bytes, TextChunks=%d, TimeChunk=%d, ExifData=%d, OtherChunks=%d",
 			result.Strip.Total,
 			result.Strip.Removed.TextChunks,
 			result.Strip.Removed.TimeChunk,
@@ -421,7 +421,7 @@ func TestOptimize_StripMetadata(t *testing.T) {
 
 	// Size should be reduced after stripping
 	if result.SizeAfterStrip >= result.BeforeSize {
-		t.Errorf("SizeAfterStrip (%d) should be < BeforeSize (%d)", 
+		t.Errorf("SizeAfterStrip (%d) should be < BeforeSize (%d)",
 			result.SizeAfterStrip, result.BeforeSize)
 	}
 }
@@ -442,7 +442,7 @@ func TestOptimize_Photo(t *testing.T) {
 
 	// Photos might not get PNGQuant applied if PSNR is too low
 	if result.PNGQuant.Applied && result.PNGQuant.PSNR < 42.0 {
-		t.Errorf("Photo should not have PNGQuant applied if PSNR < 42, got %v", 
+		t.Errorf("Photo should not have PNGQuant applied if PSNR < 42, got %v",
 			result.PNGQuant.PSNR)
 	}
 

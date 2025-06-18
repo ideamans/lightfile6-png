@@ -22,7 +22,7 @@ func init() {
 // 異なるカラーモデルの柔軟な処理のために汎用的なimage.Imageインターフェースを返します。
 func loadPngFromBytes(data []byte) (image.Image, error) {
 	reader := bytes.NewReader(data)
-	
+
 	img, err := png.Decode(reader)
 	if err != nil {
 		return nil, fmt.Errorf(l10n.T("png: failed to decode as png < %v"), err)
@@ -36,11 +36,11 @@ func loadPngFromBytes(data []byte) (image.Image, error) {
 // 高い値ほど良好な品質/類似性を示します。
 //
 // アルゴリズム:
-//   1. 両方の画像を読み込み、同じ寸法であることを確認
-//   2. RGB値をピクセル単位で比較（アルファチャンネルは無視）
-//   3. 差分から平均二乗誤差（MSE）を計算
-//   4. 公式を使用してPSNRを計算: 10 * log10(255² / MSE)
-//   5. 画像が同一の場合（MSE = 0）は正の無限大を返す
+//  1. 両方の画像を読み込み、同じ寸法であることを確認
+//  2. RGB値をピクセル単位で比較（アルファチャンネルは無視）
+//  3. 差分から平均二乗誤差（MSE）を計算
+//  4. 公式を使用してPSNRを計算: 10 * log10(255² / MSE)
+//  5. 画像が同一の場合（MSE = 0）は正の無限大を返す
 //
 // この関数は、異なるビット深度間での一貫した比較のために、
 // 16ビットカラー値を右シフトで8ビットに変換して処理します。

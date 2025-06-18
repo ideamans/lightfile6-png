@@ -102,10 +102,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            jpeg/mozjpeg/compile/
-            jpeg/jpeg-archive/src/iqa/build/
-            png/libimagequant/target/
-            png/libimagequant/imagequant-sys/libimagequant.a
+            libimagequant/target/
+            libimagequant/libimagequant.a
           key: ${{ runner.os }}-libs-${{ hashFiles('**/Makefile', '**/*.patch', '.gitmodules') }}
           restore-keys: |
             ${{ runner.os }}-libs-
@@ -182,10 +180,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            jpeg/mozjpeg/compile/
-            jpeg/jpeg-archive/src/iqa/build/
-            png/libimagequant/target/
-            png/libimagequant/imagequant-sys/libimagequant.a
+            libimagequant/target/
+            libimagequant/libimagequant.a
           key: ${{ runner.os }}-libs-${{ hashFiles('**/Makefile', '**/*.patch', '.gitmodules') }}
           restore-keys: |
             ${{ runner.os }}-libs-
@@ -230,9 +226,9 @@ jobs:
 
       - name: Install build tools
         run: |
-          # Install cmake 3.x
-          brew install macos/cmake.rb
-          # Install other build tools (Xcode Command Line Tools should already be available)
+          # Install cmake
+          brew install cmake
+          # Install rust
           brew install rust
 
       - name: Cache Go modules
@@ -249,10 +245,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            jpeg/mozjpeg/compile/
-            jpeg/jpeg-archive/src/iqa/build/
-            png/libimagequant/target/
-            png/libimagequant/imagequant-sys/libimagequant.a
+            libimagequant/target/
+            libimagequant/libimagequant.a
           key: ${{ runner.os }}-libs-${{ hashFiles('**/Makefile', '**/*.patch', '.gitmodules') }}
           restore-keys: |
             ${{ runner.os }}-libs-

@@ -16,39 +16,39 @@ func TestFilter(t *testing.T) {
 		description string // Description of what this test case validates
 	}{
 		{
-			name:              "No filter",
-			file:              "filter_none.png",
+			name:        "No filter",
+			file:        "filter_none.png",
 			expectError: false, // Should succeed
-			filterType:        "None",
-			description:       "PNG with no filter (filter type 0)",
+			filterType:  "None",
+			description: "PNG with no filter (filter type 0)",
 		},
 		{
-			name:              "Sub filter",
-			file:              "filter_sub.png",
+			name:        "Sub filter",
+			file:        "filter_sub.png",
 			expectError: false, // Should succeed
-			filterType:        "Sub",
-			description:       "PNG with Sub filter (horizontal prediction)",
+			filterType:  "Sub",
+			description: "PNG with Sub filter (horizontal prediction)",
 		},
 		{
-			name:              "Up filter",
-			file:              "filter_up.png",
+			name:        "Up filter",
+			file:        "filter_up.png",
 			expectError: false, // Should succeed
-			filterType:        "Up",
-			description:       "PNG with Up filter (vertical prediction)",
+			filterType:  "Up",
+			description: "PNG with Up filter (vertical prediction)",
 		},
 		{
-			name:              "Average filter",
-			file:              "filter_average.png",
+			name:        "Average filter",
+			file:        "filter_average.png",
 			expectError: false, // Should succeed
-			filterType:        "Average",
-			description:       "PNG with Average filter (average prediction)",
+			filterType:  "Average",
+			description: "PNG with Average filter (average prediction)",
 		},
 		{
-			name:              "Paeth filter",
-			file:              "filter_paeth.png",
+			name:        "Paeth filter",
+			file:        "filter_paeth.png",
 			expectError: false, // Should succeed
-			filterType:        "Paeth",
-			description:       "PNG with Paeth filter (complex prediction)",
+			filterType:  "Paeth",
+			description: "PNG with Paeth filter (complex prediction)",
 		},
 	}
 
@@ -118,8 +118,8 @@ func TestFilter(t *testing.T) {
 			// Log quality metrics
 			t.Logf("Successfully optimized with PSNR: %.2f", result.FinalPSNR)
 
-				// Filter-specific quality analysis
-				t.Logf("Original filter (%s) processed successfully", tc.filterType)
+			// Filter-specific quality analysis
+			t.Logf("Original filter (%s) processed successfully", tc.filterType)
 
 			// Check if optimization maintained quality
 			if result.FinalPSNR >= 40.0 {

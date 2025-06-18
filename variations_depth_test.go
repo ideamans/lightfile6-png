@@ -17,25 +17,25 @@ func TestDepth(t *testing.T) {
 		description      string // Description of what this test case validates
 	}{
 		{
-			name:              "1-bit depth",
-			file:              "depth_1bit.png",
-			expectError: false, // Should work now
-			originalBitDepth:  1,
-			description:       "1-bit PNG (black and white only)",
+			name:             "1-bit depth",
+			file:             "depth_1bit.png",
+			expectError:      false, // Should work now
+			originalBitDepth: 1,
+			description:      "1-bit PNG (black and white only)",
 		},
 		{
-			name:              "8-bit depth",
-			file:              "depth_8bit.png",
-			expectError: false, // Should succeed
-			originalBitDepth:  8,
-			description:       "8-bit PNG (standard depth)",
+			name:             "8-bit depth",
+			file:             "depth_8bit.png",
+			expectError:      false, // Should succeed
+			originalBitDepth: 8,
+			description:      "8-bit PNG (standard depth)",
 		},
 		{
-			name:              "16-bit depth",
-			file:              "depth_16bit.png",
-			expectError: false, // CantOptimize is not an error
-			originalBitDepth:  16,
-			description:       "16-bit PNG (high precision)",
+			name:             "16-bit depth",
+			file:             "depth_16bit.png",
+			expectError:      false, // CantOptimize is not an error
+			originalBitDepth: 16,
+			description:      "16-bit PNG (high precision)",
 		},
 	}
 
@@ -82,7 +82,7 @@ func TestDepth(t *testing.T) {
 			// Log optimization details regardless of result
 			t.Logf("Optimization result: %d -> %d bytes", result.BeforeSize, result.AfterSize)
 			t.Logf("PSNR: %.2f, PNGQuant: %v", result.FinalPSNR, result.PNGQuant.Applied)
-			
+
 			// Check if optimization was aborted
 			if result.CantOptimize {
 				t.Logf("Cannot optimize: file would be larger")
@@ -94,43 +94,43 @@ func TestDepth(t *testing.T) {
 			}
 
 			// Check bit depth handling
-				// Check that output file exists
-				if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-					t.Error("Output file was not created")
-					return
-				}
+			// Check that output file exists
+			if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+				t.Error("Output file was not created")
+				return
+			}
 
-				// Check bit depth in optimized file
-				optimizedBitDepth := checkBitDepth(t, outputPath)
-				t.Logf("Optimized file bit depth: %d", optimizedBitDepth)
+			// Check bit depth in optimized file
+			optimizedBitDepth := checkBitDepth(t, outputPath)
+			t.Logf("Optimized file bit depth: %d", optimizedBitDepth)
 
-				// Log bit depth conversion
-				if originalBitDepth != optimizedBitDepth {
-					t.Logf("Bit depth conversion: %d -> %d", originalBitDepth, optimizedBitDepth)
+			// Log bit depth conversion
+			if originalBitDepth != optimizedBitDepth {
+				t.Logf("Bit depth conversion: %d -> %d", originalBitDepth, optimizedBitDepth)
 
-					// Analyze the conversion type
-					if originalBitDepth > optimizedBitDepth {
-						t.Logf("Bit depth reduced (quantization applied)")
-					} else {
-						t.Logf("Bit depth increased (unexpected)")
-					}
+				// Analyze the conversion type
+				if originalBitDepth > optimizedBitDepth {
+					t.Logf("Bit depth reduced (quantization applied)")
 				} else {
-					t.Logf("Bit depth preserved: %d", originalBitDepth)
+					t.Logf("Bit depth increased (unexpected)")
 				}
+			} else {
+				t.Logf("Bit depth preserved: %d", originalBitDepth)
+			}
 
-				// Log compression details
-				if result.BeforeSize > 0 {
-					compressionRatio := float64(result.BeforeSize-result.AfterSize) / float64(result.BeforeSize) * 100
-					t.Logf("Compression: %.1f%% reduction", compressionRatio)
-				}
+			// Log compression details
+			if result.BeforeSize > 0 {
+				compressionRatio := float64(result.BeforeSize-result.AfterSize) / float64(result.BeforeSize) * 100
+				t.Logf("Compression: %.1f%% reduction", compressionRatio)
+			}
 
-				// Special logging for high bit depth files
-				if originalBitDepth == 16 {
-					t.Logf("16-bit processing: PSNR=%.2f (precision retention metric)", result.FinalPSNR)
-					if optimizedBitDepth == 8 {
-						t.Logf("16-bit to 8-bit conversion applied (libimagequant quantization)")
-					}
+			// Special logging for high bit depth files
+			if originalBitDepth == 16 {
+				t.Logf("16-bit processing: PSNR=%.2f (precision retention metric)", result.FinalPSNR)
+				if optimizedBitDepth == 8 {
+					t.Logf("16-bit to 8-bit conversion applied (libimagequant quantization)")
 				}
+			}
 		})
 	}
 }

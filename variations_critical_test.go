@@ -15,28 +15,28 @@ func TestCritical(t *testing.T) {
 		description string // Description of what this test case validates
 	}{
 		{
-			name:              "16-bit to palette conversion",
-			file:              "critical_16bit_palette.png",
+			name:        "16-bit to palette conversion",
+			file:        "critical_16bit_palette.png",
 			expectError: false, // Should succeed with significant color reduction
-			description:       "16-bit PNG converted to palette (major color information loss)",
+			description: "16-bit PNG converted to palette (major color information loss)",
 		},
 		{
-			name:              "RGBA to grayscale+alpha",
-			file:              "critical_alpha_grayscale.png",
+			name:        "RGBA to grayscale+alpha",
+			file:        "critical_alpha_grayscale.png",
 			expectError: false, // Should succeed with color space conversion
-			description:       "RGBA PNG converted to grayscale with alpha",
+			description: "RGBA PNG converted to grayscale with alpha",
 		},
 		{
-			name:              "Max compression + Paeth filter",
-			file:              "critical_maxcompression_paeth.png",
+			name:        "Max compression + Paeth filter",
+			file:        "critical_maxcompression_paeth.png",
 			expectError: false, // Should succeed with minimal compression
-			description:       "PNG with maximum compression and Paeth filter combination",
+			description: "PNG with maximum compression and Paeth filter combination",
 		},
 		{
-			name:              "Interlace + high resolution",
-			file:              "critical_interlace_highres.png",
+			name:        "Interlace + high resolution",
+			file:        "critical_interlace_highres.png",
 			expectError: false, // Should succeed, may remove interlacing
-			description:       "High resolution PNG with Adam7 interlacing",
+			description: "High resolution PNG with Adam7 interlacing",
 		},
 	}
 

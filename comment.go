@@ -30,20 +30,20 @@ func ReadComment(data []byte) (*LightFileComment, string, error) {
 
 	cs := mediaContext.(*pngstructure.ChunkSlice)
 	chunks := cs.Chunks()
-	
+
 	for _, chunk := range chunks {
 		if chunk.Type == "tEXt" {
 			textData := chunk.Data
-			
+
 			// tEXt format: keyword\0text
 			nullIndex := bytes.IndexByte(textData, 0)
 			if nullIndex == -1 {
 				continue
 			}
-			
+
 			keyword := string(textData[:nullIndex])
 			text := string(textData[nullIndex+1:])
-			
+
 			// Look for LightFile comment
 			if keyword == "LightFile" {
 				var comment LightFileComment
@@ -56,7 +56,7 @@ func ReadComment(data []byte) (*LightFileComment, string, error) {
 			}
 		}
 	}
-	
+
 	return nil, "", nil
 }
 
@@ -70,7 +70,7 @@ func BuildComment(comment *LightFileComment) (string, int, error) {
 	if err != nil {
 		return "", 0, fmt.Errorf("failed to marshal comment to JSON: %w", err)
 	}
-	
+
 	jsonStr := string(jsonData)
 	return jsonStr, len(jsonStr), nil
 }
@@ -98,7 +98,7 @@ func WriteComment(data []byte, comment string) ([]byte, error) {
 	cs := mediaContext.(*pngstructure.ChunkSlice)
 	chunks := cs.Chunks()
 	newChunks := make([]*pngstructure.Chunk, 0, len(chunks)+1)
-	
+
 	inserted := false
 	for _, chunk := range chunks {
 		if chunk.Type == "IEND" && !inserted {
@@ -112,24 +112,24 @@ func WriteComment(data []byte, comment string) ([]byte, error) {
 		}
 		newChunks = append(newChunks, chunk)
 	}
-	
+
 	if !inserted {
 		return nil, NewDataError("PNG file missing IEND chunk")
 	}
 
 	// Rebuild PNG with new chunks
 	var buf bytes.Buffer
-	
+
 	// Write PNG signature
 	buf.Write([]byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A})
-	
+
 	for _, chunk := range newChunks {
 		err := writeChunk(&buf, chunk)
 		if err != nil {
 			return nil, fmt.Errorf("failed to write chunk: %w", err)
 		}
 	}
-	
+
 	return buf.Bytes(), nil
 }
 
@@ -141,31 +141,31 @@ func writeChunk(buf *bytes.Buffer, chunk *pngstructure.Chunk) error {
 	buf.WriteByte(byte(length >> 16))
 	buf.WriteByte(byte(length >> 8))
 	buf.WriteByte(byte(length))
-	
+
 	// Write type (4 bytes)
 	buf.WriteString(chunk.Type)
-	
+
 	// Write data
 	buf.Write(chunk.Data)
-	
+
 	// Calculate and write CRC (4 bytes)
 	crcData := make([]byte, 4+len(chunk.Data))
 	copy(crcData, chunk.Type)
 	copy(crcData[4:], chunk.Data)
 	crc := crc32PNG(crcData)
-	
+
 	buf.WriteByte(byte(crc >> 24))
 	buf.WriteByte(byte(crc >> 16))
 	buf.WriteByte(byte(crc >> 8))
 	buf.WriteByte(byte(crc))
-	
+
 	return nil
 }
 
 // crc32PNG calculates CRC32 for PNG chunks
 func crc32PNG(data []byte) uint32 {
 	var crcTable [256]uint32
-	
+
 	// Initialize CRC table
 	for i := 0; i < 256; i++ {
 		c := uint32(i)
@@ -178,7 +178,7 @@ func crc32PNG(data []byte) uint32 {
 		}
 		crcTable[i] = c
 	}
-	
+
 	crc := uint32(0xFFFFFFFF)
 	for _, b := range data {
 		crc = crcTable[(crc^uint32(b))&0xFF] ^ (crc >> 8)
