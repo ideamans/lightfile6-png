@@ -114,17 +114,7 @@ jobs:
 
       - name: Test
         run: |
-          echo "=== System Information ==="
-          uname -a
-          go version
-          echo "=== Working Directory ==="
-          pwd
-          echo "=== Library Check ==="
-          ls -la libimagequant/imagequant-sys/ || echo "libimagequant directory not found"
-          echo "=== Running simple test ==="
-          go test -v -run TestSimplePass
-          echo "=== Running Pngquant test ==="
-          go test -v -run TestPngquantNormal || true
+          bash ci_debug.sh
           echo "=== Full test run ==="
           go test -v ./...
 
