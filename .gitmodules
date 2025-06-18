@@ -1,0 +1,6 @@
+[submodule "pngquant"]
+	path = pngquant
+	url = https://github.com/kornelski/pngquant.git
+[submodule "libimagequant"]
+	path = libimagequant
+	url = https://github.com/ImageOptim/libimagequant.git
