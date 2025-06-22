@@ -16,15 +16,15 @@ import (
 //
 // 使用例:
 //
-//	type JpegMetaComment struct {
-//	    types.MetaCommentBase
-//	    Ssim types.MaybeInf `json:"ssim"`
+//	type PngMetaComment struct {
+//	    MetaCommentBase
+//	    Psnr MaybeInf `json:"psnr"`
 //	}
 //
 // JSON表現:
 //
-//	完璧なマッチ: {"ssim": null}     // 無限大
-//	通常の値:     {"ssim": 0.9876}   // 通常のfloat
+//	完璧なマッチ: {"psnr": null}     // 無限大
+//	通常の値:     {"psnr": 42.58}    // 通常のfloat
 type MaybeInf float64
 
 // MarshalJSON はjson.Marshalerを実装し、無限大をnullに変換します。

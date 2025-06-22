@@ -23,8 +23,8 @@ type DataError struct {
 //
 // 例:
 //
-//	if !isValidJPEG(data) {
-//	    return NewDataError("invalid JPEG format")
+//	if !isValidPNG(data) {
+//	    return NewDataError("invalid PNG format")
 //	}
 func NewDataError(message string) *DataError {
 	return &DataError{message: message}
@@ -53,7 +53,7 @@ func NewDataErrorf(format string, args ...interface{}) *DataError {
 //
 // 例:
 //
-//	if dataErr := types.AsDataError(err); dataErr != nil {
+//	if dataErr := AsDataError(err); dataErr != nil {
 //	    output.AbortType = types.AbortTypeInvalidFormat
 //	} else {
 //	    output.AbortType = types.AbortTypeSystem

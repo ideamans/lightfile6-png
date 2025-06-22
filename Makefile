@@ -20,6 +20,6 @@ clean:
 	cd $(IMAGEQUANT_SYS) && make clean
 	go clean -cache -testcache
 
-.PHPONY: test
+.PHONY: test
 test: $(LIBIMAGEQUANT)
 	go test -v ./...

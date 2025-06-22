@@ -13,7 +13,7 @@ import (
 func init() {
 	// Register Japanese translations for this file
 	l10n.Register("ja", l10n.LexiconMap{
-		"png: failed to decode as png < %v": "png: PNGとしてデコードできませんでした < %v",
+		"failed to decode as png < %v": "PNGとしてデコードできませんでした < %v",
 	})
 }
 
@@ -25,7 +25,7 @@ func loadPngFromBytes(data []byte) (image.Image, error) {
 
 	img, err := png.Decode(reader)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("png: failed to decode as png < %v"), err)
+		return nil, fmt.Errorf(l10n.T("failed to decode as png < %v"), err)
 	}
 
 	return img, nil
@@ -53,12 +53,12 @@ func PngPsnr(data1, data2 []byte) (float64, error) {
 
 	img1, err := loadPngFromBytes(data1)
 	if err != nil {
-		return 0, fmt.Errorf(l10n.T("png: failed to decode as png < %v"), err)
+		return 0, fmt.Errorf(l10n.T("failed to decode as png < %v"), err)
 	}
 
 	img2, err := loadPngFromBytes(data2)
 	if err != nil {
-		return 0, fmt.Errorf(l10n.T("png: failed to decode as png < %v"), err)
+		return 0, fmt.Errorf(l10n.T("failed to decode as png < %v"), err)
 	}
 
 	bounds := img1.Bounds()

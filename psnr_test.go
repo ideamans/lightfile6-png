@@ -55,11 +55,11 @@ func TestPsnr(t *testing.T) {
 
 			psnr, err := PngPsnr(data1, data2)
 			if err != nil {
-				t.Errorf("CalculatePsnr(%s, %s) = %v", tc.input1, tc.input2, err)
+				t.Errorf("PngPsnr(%s, %s) = %v", tc.input1, tc.input2, err)
 			}
 
 			if math.Abs(psnr-tc.want) > 0.1 {
-				t.Errorf("CalculatePsnr(%s, %s) = %v, want %v", tc.input1, tc.input2, psnr, tc.want)
+				t.Errorf("PngPsnr(%s, %s) = %v, want %v", tc.input1, tc.input2, psnr, tc.want)
 			}
 		})
 	}

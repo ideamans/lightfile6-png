@@ -26,11 +26,11 @@ import (
 func init() {
 	// Register Japanese translations for this file
 	l10n.Register("ja", l10n.LexiconMap{
-		"png: failed to decode < %v":                   "png: デコードに失敗しました < %v",
-		"png: unsupported image type on decoding":      "png: デコード時にサポートされていない画像タイプです",
-		"png: failed to decode first in pngquant < %v": "png: pngquantの最初のデコードに失敗しました < %v",
-		"png: failed to quantize with %s (code %d)":    "png: quantizeに失敗しました: %s (コード %d)",
-		"png: failed to encode pngquant < %v":          "png: pngquantのエンコードに失敗しました < %v",
+		"failed to decode < %v":                   "デコードに失敗しました < %v",
+		"unsupported image type on decoding":      "デコード時にサポートされていない画像タイプです",
+		"failed to decode first in pngquant < %v": "pngquantの最初のデコードに失敗しました < %v",
+		"failed to quantize with %s (code %d)":    "quantizeに失敗しました: %s (コード %d)",
+		"failed to encode pngquant < %v":          "pngquantのエンコードに失敗しました < %v",
 	})
 }
 
@@ -99,7 +99,7 @@ func decodeRgbaPng(data []byte) (*image.RGBA, error) {
 
 	img, err := png.Decode(reader)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("png: failed to decode < %v"), err)
+		return nil, fmt.Errorf(l10n.T("failed to decode < %v"), err)
 	}
 
 	if _, ok := img.ColorModel().(color.Palette); ok {
@@ -111,7 +111,7 @@ func decodeRgbaPng(data []byte) (*image.RGBA, error) {
 		return rgba, nil
 	}
 
-	return nil, fmt.Errorf(l10n.T("png: unsupported image type on decoding"))
+	return nil, fmt.Errorf(l10n.T("unsupported image type on decoding"))
 }
 
 // convertNRGBAToRGBA はNRGBAフォーマットの画像をRGBAフォーマットに変換します。
@@ -168,7 +168,7 @@ func convertNRGBAToRGBA(src *image.NRGBA) *image.RGBA {
 func Pngquant(data []byte) ([]byte, error) {
 	sample, err := decodeRgbaPng(data)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("png: failed to decode first in pngquant < %v"), err)
+		return nil, fmt.Errorf(l10n.T("failed to decode first in pngquant < %v"), err)
 	}
 
 	if sample == nil {
@@ -192,7 +192,7 @@ func Pngquant(data []byte) ([]byte, error) {
 	quantize_result := C.liq_image_quantize(input, handle, &result)
 	if quantize_result != LIQ_OK {
 		phrase := translateError(int(quantize_result))
-		return nil, fmt.Errorf(l10n.T("png: failed to quantize with %s (code %d)"), phrase, quantize_result)
+		return nil, fmt.Errorf(l10n.T("failed to quantize with %s (code %d)"), phrase, quantize_result)
 	}
 	defer C.liq_result_destroy(result)
 
@@ -228,7 +228,7 @@ func Pngquant(data []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	err = png.Encode(&buf, paletted)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("png: failed to encode pngquant < %v"), err)
+		return nil, fmt.Errorf(l10n.T("failed to encode pngquant < %v"), err)
 	}
 
 	return buf.Bytes(), nil

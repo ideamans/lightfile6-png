@@ -7,6 +7,7 @@ import (
 )
 
 func TestChunk(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 
 	cases := []struct {
