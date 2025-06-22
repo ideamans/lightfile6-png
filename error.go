@@ -53,7 +53,7 @@ func NewDataErrorf(format string, args ...interface{}) *DataError {
 //
 // 例:
 //
-//	if dataErr := AsDataError(err); dataErr != nil {
+//	if dataErr := png.AsDataError(err); dataErr != nil {
 //	    output.AbortType = types.AbortTypeInvalidFormat
 //	} else {
 //	    output.AbortType = types.AbortTypeSystem

@@ -4,11 +4,12 @@ package png
 //go:generate make
 
 /*
-#cgo LDFLAGS: -Llibimagequant/imagequant-sys -limagequant
+#cgo CFLAGS: -I${SRCDIR}/libimagequant/imagequant-sys
+#cgo LDFLAGS: -L${SRCDIR}/libimagequant/imagequant-sys -limagequant
 #cgo linux LDFLAGS: -lm -ldl
 #cgo darwin LDFLAGS: -lm
 #cgo windows LDFLAGS: -lpthread -lgcc -lwsock32 -lws2_32 -lbcrypt -lntdll -luserenv
-#include <libimagequant/imagequant-sys/libimagequant.h>
+#include <libimagequant.h>
 */
 import "C"
 
