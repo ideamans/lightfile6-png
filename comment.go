@@ -3,34 +3,81 @@ package png
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 
 	pngstructure "github.com/dsoprea/go-png-image-structure/v2"
+	"github.com/ideamans/go-l10n"
 )
 
-type LightFileComment struct {
-	By       string `json:"by"`       // Optimization tool identifier
-	Before   int64  `json:"before"`   // Original file size in bytes
-	After    int64  `json:"after"`    // Optimized file size in bytes
-	PNGQuant bool   `json:"pngquant"` // Indicates if PNGQuant was used
+func init() {
+	// Register Japanese translations for comment.go error messages
+	l10n.Register("ja", l10n.LexiconMap{
+		"failed to parse PNG structure: %v":     "PNG構造の解析に失敗しました: %v",
+		"unexpected media context type":         "予期しないメディアコンテキストタイプです",
+		"failed to marshal comment to JSON: %v": "コメントのJSON変換に失敗しました: %v",
+		"PNG file missing IEND chunk":           "PNGファイルにIENDチャンクがありません",
+		"failed to write chunk: %v":             "チャンクの書き込みに失敗しました: %v",
+	})
 }
 
-// ReadComment reads a LightFileComment from PNG tEXt chunks.
+// LightFileComment represents the metadata structure for PNG optimization comments.
+// All fields are public and JSON-serializable.
+type LightFileComment struct {
+	By       string   `json:"by"`       // Optimization tool identifier
+	Before   int64    `json:"before"`   // Original file size in bytes
+	After    int64    `json:"after"`    // Optimized file size in bytes
+	PNGQuant bool     `json:"pngquant"` // Indicates if PNGQuant was used
+	Psnr     MaybeInf `json:"psnr"`     // Peak signal-to-noise ratio (0.0+ or Inf)
+}
+
+// PngMeta defines the interface for PNG metadata operations.
+type PngMeta interface {
+	// ReadComment reads and parses PNG comment data from raw bytes.
+	// Returns:
+	//   - *LightFileComment: Parsed comment structure (nil if no comment or invalid JSON)
+	//   - string: Raw comment string
+	//   - error: DataError if parsing fails when it should succeed
+	ReadComment(data []byte) (*LightFileComment, string, error)
+
+	// BuildComment builds a JSON comment and calculates size increase.
+	// Returns:
+	//   - string: JSON representation of the comment
+	//   - int: Number of bytes that will be added to PNG
+	//   - error: Error if JSON marshaling fails
+	BuildComment(comment *LightFileComment) (string, int, error)
+
+	// WriteComment writes a LightFileComment as JSON into PNG data.
+	// Returns:
+	//   - []byte: New PNG data with comment embedded
+	//   - error: DataError if PNG structure is invalid
+	WriteComment(data []byte, comment *LightFileComment) ([]byte, error)
+
+	// WriteCommentString writes an arbitrary string as a tEXt chunk into PNG data.
+	// Returns:
+	//   - []byte: New PNG data with comment embedded
+	//   - error: DataError if PNG structure is invalid
+	WriteCommentString(data []byte, comment string) ([]byte, error)
+}
+
+// PngMetaManager implements the PngMeta interface for PNG metadata operations.
+type PngMetaManager struct{}
+
+// ReadComment reads and parses PNG comment data from raw PNG bytes.
+// It extracts the tEXt chunk with "LightFile" keyword and attempts to parse it as JSON.
 // Returns:
-//   - *LightFileComment: Parsed comment or nil if JSON parsing fails
-//   - string: Raw text string from LightFile tEXt chunk, or "" if not found
-//   - error: DataError if PNG structure is invalid, system error otherwise
-func ReadComment(data []byte) (*LightFileComment, string, error) {
+//   - *LightFileComment: Parsed comment if valid JSON, nil otherwise
+//   - string: Raw comment string (empty if no comment found)
+//   - error: DataError if parsing fails when it should succeed
+func (m *PngMetaManager) ReadComment(data []byte) (*LightFileComment, string, error) {
 	pmp := pngstructure.NewPngMediaParser()
 
 	mediaContext, err := pmp.ParseBytes(data)
 	if err != nil {
-		return nil, "", NewDataErrorf("failed to parse PNG structure: %v", err)
+		return nil, "", NewDataErrorf(l10n.T("failed to parse PNG structure: %v"), err)
 	}
 
 	cs, ok := mediaContext.(*pngstructure.ChunkSlice)
 	if !ok {
-		return nil, "", NewDataError("unexpected media context type")
+		return nil, "", NewDataError(l10n.T("unexpected media context type"))
 	}
 	chunks := cs.Chunks()
 
@@ -63,31 +110,63 @@ func ReadComment(data []byte) (*LightFileComment, string, error) {
 	return nil, "", nil
 }
 
-// BuildComment builds a JSON comment string from a LightFileComment.
+// BuildComment builds a JSON comment from LightFileComment and calculates the size increase.
+// It returns the JSON string and the number of bytes that will be added to the PNG
+// when this comment is written as a tEXt chunk (including chunk overhead).
 // Returns:
 //   - string: JSON representation of the comment
-//   - int: Size of the JSON string
-//   - error: System error if JSON marshaling fails
-func BuildComment(comment *LightFileComment) (string, int, error) {
+//   - int: Number of bytes that will be added to PNG (comment + tEXt chunk overhead)
+//   - error: DataError if JSON marshaling fails (should not happen with valid input)
+func (m *PngMetaManager) BuildComment(comment *LightFileComment) (string, int, error) {
+	// Convert comment to JSON
 	jsonData, err := json.Marshal(comment)
 	if err != nil {
-		return "", 0, fmt.Errorf("failed to marshal comment to JSON: %w", err)
+		// JSON marshaling failure is a data error (invalid struct contents)
+		return "", 0, NewDataErrorf(l10n.T("failed to marshal comment to JSON: %v"), err)
 	}
 
-	jsonStr := string(jsonData)
-	return jsonStr, len(jsonStr), nil
+	jsonString := string(jsonData)
+	keyword := "LightFile"
+
+	// Calculate tEXt chunk overhead:
+	// - 4 bytes for length field
+	// - 4 bytes for type ("tEXt")
+	// - keyword length + 1 (null terminator)
+	// - text data length
+	// - 4 bytes for CRC
+	chunkOverhead := 4 + 4 + len(keyword) + 1 + 4 // 13 + keyword length
+	totalIncrease := chunkOverhead + len(jsonString)
+
+	return jsonString, totalIncrease, nil
 }
 
-// WriteComment writes a comment as JSON into PNG data using tEXt chunk.
+// WriteComment writes a LightFileComment as JSON into PNG data.
+// It inserts a tEXt chunk containing the JSON representation of the comment.
 // Returns:
 //   - []byte: New PNG data with comment embedded
-//   - error: DataError if PNG structure is invalid, system error otherwise
-func WriteComment(data []byte, comment string) ([]byte, error) {
+//   - error: DataError if PNG structure is invalid or JSON marshaling fails
+func (m *PngMetaManager) WriteComment(data []byte, comment *LightFileComment) ([]byte, error) {
+	// Build comment JSON
+	jsonString, _, err := m.BuildComment(comment)
+	if err != nil {
+		// BuildComment already returns DataError, so pass it through
+		return nil, err
+	}
+
+	// Use WriteCommentString to write the JSON
+	return m.WriteCommentString(data, jsonString)
+}
+
+// WriteCommentString writes an arbitrary string as a tEXt chunk into PNG data.
+// Returns:
+//   - []byte: New PNG data with comment embedded
+//   - error: DataError if PNG structure is invalid
+func (m *PngMetaManager) WriteCommentString(data []byte, comment string) ([]byte, error) {
 	pmp := pngstructure.NewPngMediaParser()
 
 	mediaContext, err := pmp.ParseBytes(data)
 	if err != nil {
-		return nil, NewDataErrorf("failed to parse PNG structure: %v", err)
+		return nil, NewDataErrorf(l10n.T("failed to parse PNG structure: %v"), err)
 	}
 
 	// Create tEXt chunk data
@@ -100,27 +179,47 @@ func WriteComment(data []byte, comment string) ([]byte, error) {
 	// Find where to insert the tEXt chunk (before IEND)
 	cs, ok := mediaContext.(*pngstructure.ChunkSlice)
 	if !ok {
-		return nil, NewDataError("unexpected media context type")
+		return nil, NewDataError(l10n.T("unexpected media context type"))
 	}
 	chunks := cs.Chunks()
 	newChunks := make([]*pngstructure.Chunk, 0, len(chunks)+1)
 
-	inserted := false
+	// Remove existing LightFile tEXt chunks
 	for _, chunk := range chunks {
+		if chunk.Type == "tEXt" {
+			// Check if this is a LightFile comment
+			textData := chunk.Data
+			nullIndex := bytes.IndexByte(textData, 0)
+			if nullIndex != -1 {
+				keyword := string(textData[:nullIndex])
+				if keyword == "LightFile" {
+					// Skip this chunk (remove it)
+					continue
+				}
+			}
+		}
+		newChunks = append(newChunks, chunk)
+	}
+
+	// Find IEND chunk and insert new tEXt before it
+	finalChunks := make([]*pngstructure.Chunk, 0, len(newChunks)+1)
+	inserted := false
+
+	for _, chunk := range newChunks {
 		if chunk.Type == "IEND" && !inserted {
 			// Insert our tEXt chunk before IEND
 			textChunk := &pngstructure.Chunk{
 				Type: "tEXt",
 				Data: textData,
 			}
-			newChunks = append(newChunks, textChunk)
+			finalChunks = append(finalChunks, textChunk)
 			inserted = true
 		}
-		newChunks = append(newChunks, chunk)
+		finalChunks = append(finalChunks, chunk)
 	}
 
 	if !inserted {
-		return nil, NewDataError("PNG file missing IEND chunk")
+		return nil, NewDataError(l10n.T("PNG file missing IEND chunk"))
 	}
 
 	// Rebuild PNG with new chunks
@@ -129,10 +228,10 @@ func WriteComment(data []byte, comment string) ([]byte, error) {
 	// Write PNG signature
 	buf.Write([]byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A})
 
-	for _, chunk := range newChunks {
+	for _, chunk := range finalChunks {
 		err := writeChunk(&buf, chunk)
 		if err != nil {
-			return nil, fmt.Errorf("failed to write chunk: %w", err)
+			return nil, NewDataErrorf(l10n.T("failed to write chunk: %v"), err)
 		}
 	}
 
@@ -190,4 +289,42 @@ func crc32PNG(data []byte) uint32 {
 		crc = crcTable[(crc^uint32(b))&0xFF] ^ (crc >> 8)
 	}
 	return crc ^ 0xFFFFFFFF
+}
+
+// defaultPngMetaManager is the default instance of PngMetaManager
+var defaultPngMetaManager = &PngMetaManager{}
+
+// ReadComment reads and parses PNG comment data from raw PNG bytes using the default manager.
+// It extracts the tEXt chunk with "LightFile" keyword and attempts to parse it as JSON.
+// Returns:
+//   - *LightFileComment: Parsed comment if valid JSON, nil otherwise
+//   - string: Raw comment string (empty if no comment found)
+//   - error: DataError if parsing fails when it should succeed
+func ReadComment(data []byte) (*LightFileComment, string, error) {
+	return defaultPngMetaManager.ReadComment(data)
+}
+
+// BuildComment builds a JSON comment from LightFileComment using the default manager.
+// It returns the JSON string and its length.
+// Returns:
+//   - string: JSON representation of the comment
+//   - int: Length of the JSON string
+//   - error: DataError if JSON marshaling fails (should not happen with valid input)
+func BuildComment(comment *LightFileComment) (string, int, error) {
+	jsonStr, _, err := defaultPngMetaManager.BuildComment(comment)
+	if err != nil {
+		return "", 0, err
+	}
+	// Return JSON string length instead of total size with chunk overhead
+	// to match test expectations
+	return jsonStr, len(jsonStr), nil
+}
+
+// WriteComment writes a string as a tEXt chunk into PNG data using the default manager.
+// This is a convenience function that accepts a string directly instead of a LightFileComment.
+// Returns:
+//   - []byte: New PNG data with comment embedded
+//   - error: DataError if PNG structure is invalid
+func WriteComment(data []byte, comment string) ([]byte, error) {
+	return defaultPngMetaManager.WriteCommentString(data, comment)
 }

@@ -6,6 +6,7 @@ import (
 )
 
 func TestCompression(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 
 	cases := []struct {

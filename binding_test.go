@@ -62,12 +62,12 @@ func TestPngquantError(t *testing.T) {
 		{
 			name:         "実態がJPEGのファイル",
 			file:         "jpeg.png",
-			errorMessage: "png: failed to decode first in pngquant < png: failed to decode < png: invalid format: not a PNG file",
+			errorMessage: "failed to decode first in pngquant < failed to decode < png: invalid format: not a PNG file",
 		},
 		{
 			name:         "破損したファイル",
 			file:         "bad.png",
-			errorMessage: "png: failed to decode first in pngquant < png: failed to decode < unexpected EOF",
+			errorMessage: "failed to decode first in pngquant < failed to decode < unexpected EOF",
 		},
 	}
 

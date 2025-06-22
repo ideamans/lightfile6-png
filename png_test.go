@@ -8,6 +8,7 @@ import (
 )
 
 func TestOptimize(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 
 	testCases := []struct {
@@ -281,6 +282,7 @@ func TestOptimize(t *testing.T) {
 }
 
 func TestOptimize_PSNRQualityLevels(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 
 	qualities := []struct {
@@ -323,6 +325,7 @@ func TestOptimize_PSNRQualityLevels(t *testing.T) {
 }
 
 func TestOptimize_ErrorHandling(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 
 	t.Run("NonExistentFile", func(t *testing.T) {
@@ -351,6 +354,7 @@ func TestOptimize_ErrorHandling(t *testing.T) {
 }
 
 func TestIsAcceptablePSNR(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		quality  string
 		psnr     float64
@@ -391,6 +395,7 @@ func TestIsAcceptablePSNR(t *testing.T) {
 }
 
 func TestOptimize_StripMetadata(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 
 	input := OptimizePngInput{
@@ -427,6 +432,7 @@ func TestOptimize_StripMetadata(t *testing.T) {
 }
 
 func TestOptimize_Photo(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
 
 	input := OptimizePngInput{
