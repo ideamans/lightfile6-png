@@ -21,6 +21,8 @@ github.com/ideamans/go-l10n v1.0.2 h1:K3gF0kqWXHv8HS138pC/SbVJZ4jSiqPfwUu2il2N0c
 github.com/ideamans/go-l10n v1.0.2/go.mod h1:FQVkD23j0dWpmHUHI+GpAKQafkP15oIJKwq/FQXM4No=
 github.com/ideamans/go-png-meta-web-strip v1.0.0 h1:lL9rAwlCPF4ltI4dP3LlsyM6I7nfAT5kNGf+66vS7+o=
 github.com/ideamans/go-png-meta-web-strip v1.0.0/go.mod h1:HCJVZBlfB6hqKF7lp5IfzOjK//rf2WiQTl8UCyILXvE=
+github.com/ideamans/go-psnr v1.0.1 h1:Y5O/NRuf99yoOenMapj4JZse4D8o7TegazOf3ZRW9kg=
+github.com/ideamans/go-psnr v1.0.1/go.mod h1:1W/DsHBgK3M8GIs6I//ZHnMIiC2/DomWKa0f58gmFzI=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=

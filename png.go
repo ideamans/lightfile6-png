@@ -7,6 +7,7 @@ import (
 
 	"github.com/ideamans/go-l10n"
 	pngmetawebstrip "github.com/ideamans/go-png-meta-web-strip"
+	"github.com/ideamans/go-psnr"
 )
 
 func init() {
@@ -122,13 +123,13 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 		// Set quantize error and continue with stripped data
 		output.PNGQuantError = err
 	} else {
-		psnr, psnrErr := PngPsnr(beforePNGQuant, quantizedData)
+		psnrValue, psnrErr := psnr.Compute(beforePNGQuant, quantizedData)
 		err = psnrErr
 		if err != nil {
 			return nil, NewDataErrorf(l10n.T("failed to calculate PSNR after quantization: %v"), err)
 		}
-		output.PNGQuant.PSNR = psnr
-		if isAcceptablePSNR(input.Quality, psnr) {
+		output.PNGQuant.PSNR = psnrValue
+		if isAcceptablePSNR(input.Quality, psnrValue) {
 			output.PNGQuant.Applied = true
 			pngData = quantizedData
 		}
@@ -136,9 +137,9 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 	output.SizeAfterPNGQuant = int64(len(pngData))
 
 	// Calculate final PSNR before building comment
-	finalPSNR, err := PngPsnr(originalData, pngData)
+	finalPSNR, err := psnr.Compute(originalData, pngData)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to calculate final PSNR: %w"), err)
+		return nil, NewDataErrorf(l10n.T("failed to calculate final PSNR: %w"), err)
 	}
 
 	// Build comment with optimization information
@@ -172,9 +173,9 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 	pngData = commentedData
 
 	// Re-calculate PSNR after adding comment to ensure it hasn't changed
-	finalPSNRAfterComment, err := PngPsnr(originalData, pngData)
+	finalPSNRAfterComment, err := psnr.Compute(originalData, pngData)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to calculate final PSNR after comment: %w"), err)
+		return nil, NewDataErrorf(l10n.T("failed to calculate final PSNR after comment: %w"), err)
 	}
 	output.FinalPSNR = finalPSNRAfterComment
 
