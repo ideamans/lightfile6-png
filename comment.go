@@ -26,11 +26,11 @@ type LightFileComment struct {
 	Before   int64    `json:"before"`   // Original file size in bytes
 	After    int64    `json:"after"`    // Optimized file size in bytes
 	PNGQuant bool     `json:"pngquant"` // Indicates if PNGQuant was used
-	Psnr     MaybeInf `json:"psnr"`     // Peak signal-to-noise ratio (0.0+ or Inf)
+	PSNR     MaybeInf `json:"psnr"`     // Peak signal-to-noise ratio (0.0+ or Inf)
 }
 
-// PngMeta defines the interface for PNG metadata operations.
-type PngMeta interface {
+// PNGMeta defines the interface for PNG metadata operations.
+type PNGMeta interface {
 	// ReadComment reads and parses PNG comment data from raw bytes.
 	// Returns:
 	//   - *LightFileComment: Parsed comment structure (nil if no comment or invalid JSON)
@@ -58,8 +58,8 @@ type PngMeta interface {
 	WriteCommentString(data []byte, comment string) ([]byte, error)
 }
 
-// PngMetaManager implements the PngMeta interface for PNG metadata operations.
-type PngMetaManager struct{}
+// PNGMetaManager implements the PNGMeta interface for PNG metadata operations.
+type PNGMetaManager struct{}
 
 // ReadComment reads and parses PNG comment data from raw PNG bytes.
 // It extracts the tEXt chunk with "LightFile" keyword and attempts to parse it as JSON.
@@ -67,7 +67,7 @@ type PngMetaManager struct{}
 //   - *LightFileComment: Parsed comment if valid JSON, nil otherwise
 //   - string: Raw comment string (empty if no comment found)
 //   - error: DataError if parsing fails when it should succeed
-func (m *PngMetaManager) ReadComment(data []byte) (*LightFileComment, string, error) {
+func (m *PNGMetaManager) ReadComment(data []byte) (*LightFileComment, string, error) {
 	pmp := pngstructure.NewPngMediaParser()
 
 	mediaContext, err := pmp.ParseBytes(data)
@@ -117,7 +117,7 @@ func (m *PngMetaManager) ReadComment(data []byte) (*LightFileComment, string, er
 //   - string: JSON representation of the comment
 //   - int: Number of bytes that will be added to PNG (comment + tEXt chunk overhead)
 //   - error: DataError if JSON marshaling fails (should not happen with valid input)
-func (m *PngMetaManager) BuildComment(comment *LightFileComment) (string, int, error) {
+func (m *PNGMetaManager) BuildComment(comment *LightFileComment) (string, int, error) {
 	// Convert comment to JSON
 	jsonData, err := json.Marshal(comment)
 	if err != nil {
@@ -145,7 +145,7 @@ func (m *PngMetaManager) BuildComment(comment *LightFileComment) (string, int, e
 // Returns:
 //   - []byte: New PNG data with comment embedded
 //   - error: DataError if PNG structure is invalid or JSON marshaling fails
-func (m *PngMetaManager) WriteComment(data []byte, comment *LightFileComment) ([]byte, error) {
+func (m *PNGMetaManager) WriteComment(data []byte, comment *LightFileComment) ([]byte, error) {
 	// Build comment JSON
 	jsonString, _, err := m.BuildComment(comment)
 	if err != nil {
@@ -161,7 +161,7 @@ func (m *PngMetaManager) WriteComment(data []byte, comment *LightFileComment) ([
 // Returns:
 //   - []byte: New PNG data with comment embedded
 //   - error: DataError if PNG structure is invalid
-func (m *PngMetaManager) WriteCommentString(data []byte, comment string) ([]byte, error) {
+func (m *PNGMetaManager) WriteCommentString(data []byte, comment string) ([]byte, error) {
 	pmp := pngstructure.NewPngMediaParser()
 
 	mediaContext, err := pmp.ParseBytes(data)
@@ -291,8 +291,8 @@ func crc32PNG(data []byte) uint32 {
 	return crc ^ 0xFFFFFFFF
 }
 
-// defaultPngMetaManager is the default instance of PngMetaManager
-var defaultPngMetaManager = &PngMetaManager{}
+// defaultPNGMetaManager is the default instance of PNGMetaManager
+var defaultPNGMetaManager = &PNGMetaManager{}
 
 // ReadComment reads and parses PNG comment data from raw PNG bytes using the default manager.
 // It extracts the tEXt chunk with "LightFile" keyword and attempts to parse it as JSON.
@@ -301,7 +301,7 @@ var defaultPngMetaManager = &PngMetaManager{}
 //   - string: Raw comment string (empty if no comment found)
 //   - error: DataError if parsing fails when it should succeed
 func ReadComment(data []byte) (*LightFileComment, string, error) {
-	return defaultPngMetaManager.ReadComment(data)
+	return defaultPNGMetaManager.ReadComment(data)
 }
 
 // BuildComment builds a JSON comment from LightFileComment using the default manager.
@@ -311,7 +311,7 @@ func ReadComment(data []byte) (*LightFileComment, string, error) {
 //   - int: Length of the JSON string
 //   - error: DataError if JSON marshaling fails (should not happen with valid input)
 func BuildComment(comment *LightFileComment) (string, int, error) {
-	jsonStr, _, err := defaultPngMetaManager.BuildComment(comment)
+	jsonStr, _, err := defaultPNGMetaManager.BuildComment(comment)
 	if err != nil {
 		return "", 0, err
 	}
@@ -326,5 +326,5 @@ func BuildComment(comment *LightFileComment) (string, int, error) {
 //   - []byte: New PNG data with comment embedded
 //   - error: DataError if PNG structure is invalid
 func WriteComment(data []byte, comment string) ([]byte, error) {
-	return defaultPngMetaManager.WriteCommentString(data, comment)
+	return defaultPNGMetaManager.WriteCommentString(data, comment)
 }

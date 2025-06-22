@@ -70,7 +70,7 @@ func TestColortype(t *testing.T) {
 				t.Errorf("Expected original color type %s, but got %s", tc.originalColorType, originalColorType)
 			}
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force", // force to ensure processing

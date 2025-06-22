@@ -64,7 +64,7 @@ func TestFilter(t *testing.T) {
 			// This is complex as filters can vary per scanline. We'll focus on optimization behavior
 			// and assume the test files use the filters indicated by their names
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force",

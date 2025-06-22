@@ -79,7 +79,7 @@ func TestMetadata(t *testing.T) {
 				t.Errorf("Expected original iTXt presence %v, but got %v", tc.expectInternational, originalInternational)
 			}
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force",

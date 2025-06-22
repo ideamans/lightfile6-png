@@ -50,7 +50,7 @@ func TestCompression(t *testing.T) {
 			// The compression level affects the deflate algorithm used but isn't stored in the file
 			// We'll focus on the optimization results instead
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force",

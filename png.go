@@ -46,7 +46,7 @@ func init() {
 	})
 }
 
-type OptimizePngInput struct {
+type OptimizePNGInput struct {
 	SrcPath  string
 	DestPath string
 	Quality  string
@@ -56,7 +56,7 @@ var (
 	PSNRThreshold = 35.0
 )
 
-type OptimizePngOutput struct {
+type OptimizePNGOutput struct {
 	BeforeSize         int64
 	AlreadyOptimized   bool
 	AlreadyOptimizedBy string
@@ -91,9 +91,9 @@ func isAcceptablePSNR(quality string, psnr float64) bool {
 	}
 }
 
-func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
+func Optimize(input OptimizePNGInput) (*OptimizePNGOutput, error) {
 	logInfo("Starting PNG optimization (quality: %s)", input.Quality)
-	output := OptimizePngOutput{}
+	output := OptimizePNGOutput{}
 
 	// Read PNG file
 	pngData, err := os.ReadFile(input.SrcPath)
@@ -103,7 +103,7 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 	output.BeforeSize = int64(len(pngData))
 
 	// Create metadata manager
-	metaManager := &PngMetaManager{}
+	metaManager := &PNGMetaManager{}
 
 	// Check if already optimized using ReadComment
 	comment, _, err := metaManager.ReadComment(pngData)
@@ -137,7 +137,7 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 	}
 	output.SizeAfterStrip = int64(len(pngData))
 
-	// PngquantはPsnrにより棄却する可能性がある
+	// PngquantはPSNRにより棄却する可能性がある
 	beforePNGQuant := make([]byte, len(pngData))
 	copy(beforePNGQuant, pngData)
 
@@ -176,7 +176,7 @@ func Optimize(input OptimizePngInput) (*OptimizePngOutput, error) {
 		Before:   output.BeforeSize,
 		After:    int64(len(pngData)),
 		PNGQuant: output.PNGQuant.Applied,
-		Psnr:     MaybeInf(finalPSNR),
+		PSNR:     MaybeInf(finalPSNR),
 	}
 
 	// Calculate comment size and check if final size would exceed original

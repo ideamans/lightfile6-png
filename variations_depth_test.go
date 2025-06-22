@@ -56,7 +56,7 @@ func TestDepth(t *testing.T) {
 				t.Errorf("Expected original bit depth %d, but got %d", tc.originalBitDepth, originalBitDepth)
 			}
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force",

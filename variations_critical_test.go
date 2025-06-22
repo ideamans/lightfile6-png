@@ -48,7 +48,7 @@ func TestCritical(t *testing.T) {
 
 			t.Logf("Testing: %s", tc.description)
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force",

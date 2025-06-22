@@ -16,9 +16,9 @@ import (
 //
 // 使用例:
 //
-//	type PngMetaComment struct {
+//	type PNGMetaComment struct {
 //	    MetaCommentBase
-//	    Psnr MaybeInf `json:"psnr"`
+//	    PSNR MaybeInf `json:"psnr"`
 //	}
 //
 // JSON表現:

@@ -53,7 +53,7 @@ func TestInterlace(t *testing.T) {
 				t.Errorf("Expected original interlace method %d, but got %d", tc.originalInterlace, originalInterlace)
 			}
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force",

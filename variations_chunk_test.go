@@ -70,7 +70,7 @@ func TestChunk(t *testing.T) {
 				t.Errorf("Expected original tRNS presence %v, but got %v", tc.expectTransparency, originalTransparency)
 			}
 
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  inputPath,
 				DestPath: outputPath,
 				Quality:  "force",

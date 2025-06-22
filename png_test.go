@@ -110,7 +110,7 @@ func TestOptimize(t *testing.T) {
 				setupSrc := "testdata/optimize/psnr-will-50.png"
 				tmpOptimized := filepath.Join(tempDir, "already-optimized.png")
 
-				result, err := Optimize(OptimizePngInput{
+				result, err := Optimize(OptimizePNGInput{
 					SrcPath:  setupSrc,
 					DestPath: tmpOptimized,
 					Quality:  "",
@@ -127,7 +127,7 @@ func TestOptimize(t *testing.T) {
 			}
 
 			// Run optimization
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  srcPath,
 				DestPath: destPath,
 				Quality:  tc.quality,
@@ -298,7 +298,7 @@ func TestOptimize_PSNRQualityLevels(t *testing.T) {
 
 	for _, q := range qualities {
 		t.Run("quality_"+q.quality, func(t *testing.T) {
-			input := OptimizePngInput{
+			input := OptimizePNGInput{
 				SrcPath:  "testdata/optimize/psnr-will-44.png",
 				DestPath: filepath.Join(tempDir, "output_"+q.quality+".png"),
 				Quality:  q.quality,
@@ -329,7 +329,7 @@ func TestOptimize_ErrorHandling(t *testing.T) {
 	tempDir := t.TempDir()
 
 	t.Run("NonExistentFile", func(t *testing.T) {
-		input := OptimizePngInput{
+		input := OptimizePNGInput{
 			SrcPath:  "testdata/optimize/nonexistent.png",
 			DestPath: filepath.Join(tempDir, "output.png"),
 		}
@@ -341,7 +341,7 @@ func TestOptimize_ErrorHandling(t *testing.T) {
 	})
 
 	t.Run("InvalidDestPath", func(t *testing.T) {
-		input := OptimizePngInput{
+		input := OptimizePNGInput{
 			SrcPath:  "testdata/optimize/psnr-will-50.png",
 			DestPath: "/invalid/path/that/does/not/exist/output.png",
 		}
@@ -398,7 +398,7 @@ func TestOptimize_StripMetadata(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 
-	input := OptimizePngInput{
+	input := OptimizePNGInput{
 		SrcPath:  "testdata/optimize/with-mac-icc.png",
 		DestPath: filepath.Join(tempDir, "stripped.png"),
 		Quality:  "",
@@ -435,7 +435,7 @@ func TestOptimize_Photo(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 
-	input := OptimizePngInput{
+	input := OptimizePNGInput{
 		SrcPath:  "testdata/optimize/me2020.png",
 		DestPath: filepath.Join(tempDir, "photo.png"),
 		Quality:  "",

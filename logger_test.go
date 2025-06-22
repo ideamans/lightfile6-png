@@ -78,7 +78,7 @@ func TestOptimizeWithLogger(t *testing.T) {
 	SetLogger(testLogger)
 
 	// Run optimization on a regular PNG file
-	input := OptimizePngInput{
+	input := OptimizePNGInput{
 		SrcPath:  "./testdata/optimize/me2020.png",
 		DestPath: "./testdata/temp/optimized_test.png",
 		Quality:  "",
