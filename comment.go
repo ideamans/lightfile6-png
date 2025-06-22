@@ -14,7 +14,7 @@ func init() {
 		"failed to parse PNG structure: %v":     "PNG構造の解析に失敗しました: %v",
 		"unexpected media context type":         "予期しないメディアコンテキストタイプです",
 		"failed to marshal comment to JSON: %v": "コメントのJSON変換に失敗しました: %v",
-		"PNG file missing IEND chunk":           "PNGファイルにIENDチャンクがありません",
+		"png file missing IEND chunk":           "PNGファイルにIENDチャンクがありません",
 		"failed to write chunk: %v":             "チャンクの書き込みに失敗しました: %v",
 	})
 }
@@ -219,7 +219,7 @@ func (m *PngMetaManager) WriteCommentString(data []byte, comment string) ([]byte
 	}
 
 	if !inserted {
-		return nil, NewDataError(l10n.T("PNG file missing IEND chunk"))
+		return nil, NewDataError(l10n.T("png file missing IEND chunk"))
 	}
 
 	// Rebuild PNG with new chunks

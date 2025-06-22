@@ -12,6 +12,7 @@ require (
 	github.com/dsoprea/go-exif/v3 v3.0.0-20210428042052-dca55bf8ca15 // indirect
 	github.com/dsoprea/go-logging v0.0.0-20200517223158-a10564966e9d // indirect
 	github.com/dsoprea/go-utility/v2 v2.0.0-20200717064901-2fccff4aa15e // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-errors/errors v1.1.1 // indirect
 	github.com/golang/geo v0.0.0-20200319012246-673a6f80352d // indirect
 	github.com/ideamans/go-psnr v1.0.1 // indirect

@@ -10,6 +10,8 @@ github.com/dsoprea/go-png-image-structure/v2 v2.0.0-20210512210324-29b889a6093d/
 github.com/dsoprea/go-utility v0.0.0-20200711062821-fab8125e9bdf/go.mod h1:95+K3z2L0mqsVYd6yveIv1lmtT3tcQQ3dVakPySffW8=
 github.com/dsoprea/go-utility/v2 v2.0.0-20200717064901-2fccff4aa15e h1:IxIbA7VbCNrwumIYjDoMOdf4KOSkMC6NJE4s8oRbE7E=
 github.com/dsoprea/go-utility/v2 v2.0.0-20200717064901-2fccff4aa15e/go.mod h1:uAzdkPTub5Y9yQwXe8W4m2XuP0tK4a9Q/dantD0+uaU=
+github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
+github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/go-errors/errors v1.0.1/go.mod h1:f4zRHt4oKfwPJE5k8C9vpYG+aDHdBFUsgrm6/TyX73Q=
 github.com/go-errors/errors v1.0.2/go.mod h1:psDX2osz5VnTOnFWbDeWwS7yejl+uV3FEWEp4lssFEs=
 github.com/go-errors/errors v1.1.1 h1:ljK/pL5ltg3qoN+OtN6yCv9HWSfMwxSx90GJCZQxYNg=
