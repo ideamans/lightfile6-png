@@ -70,13 +70,7 @@ func TestColortype(t *testing.T) {
 				t.Errorf("Expected original color type %s, but got %s", tc.originalColorType, originalColorType)
 			}
 
-			input := OptimizePNGInput{
-				SrcPath:  inputPath,
-				DestPath: outputPath,
-				Quality:  "force", // force to ensure processing
-			}
-
-			result, err := Optimize(input)
+			result, err := runVariationOptimization(t, inputPath, outputPath, "force")
 
 			// Check error expectation
 			if tc.expectError {

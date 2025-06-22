@@ -48,13 +48,7 @@ func TestCritical(t *testing.T) {
 
 			t.Logf("Testing: %s", tc.description)
 
-			input := OptimizePNGInput{
-				SrcPath:  inputPath,
-				DestPath: outputPath,
-				Quality:  "force",
-			}
-
-			result, err := Optimize(input)
+			result, err := runVariationOptimization(t, inputPath, outputPath, "force")
 
 			// Check error expectation
 			if tc.expectError {

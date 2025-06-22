@@ -50,13 +50,7 @@ func TestCompression(t *testing.T) {
 			// The compression level affects the deflate algorithm used but isn't stored in the file
 			// We'll focus on the optimization results instead
 
-			input := OptimizePNGInput{
-				SrcPath:  inputPath,
-				DestPath: outputPath,
-				Quality:  "force",
-			}
-
-			result, err := Optimize(input)
+			result, err := runVariationOptimization(t, inputPath, outputPath, "force")
 
 			// Check error expectation
 			if tc.expectError {

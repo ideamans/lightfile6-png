@@ -230,3 +230,9 @@ func isGrayscaleImage(img *image.NRGBA) bool {
 	}
 	return true
 }
+
+// runVariationOptimization is a helper function for variation tests
+func runVariationOptimization(t *testing.T, inputPath, outputPath, quality string) (*OptimizePNGOutput, error) {
+	t.Helper()
+	return TestRunOptimization(quality, inputPath, outputPath)
+}

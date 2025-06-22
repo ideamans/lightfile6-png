@@ -55,13 +55,7 @@ func TestAlpha(t *testing.T) {
 			// 注意: アルファ検出は複雑で、実際のPNGコンテンツと期待される特性に基づいて
 			// 異なる可能性があるため、ここでは厳密な一致は要求しません
 
-			input := OptimizePNGInput{
-				SrcPath:  inputPath,
-				DestPath: outputPath,
-				Quality:  "force", // force to ensure processing
-			}
-
-			result, err := Optimize(input)
+			result, err := runVariationOptimization(t, inputPath, outputPath, "force")
 
 			// Check error expectation
 			if tc.expectError {

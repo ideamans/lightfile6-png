@@ -1,14 +1,10 @@
 package png
 
 import (
-	"fmt"
 	"math"
-	"os"
 
-	"github.com/dustin/go-humanize"
 	"github.com/ideamans/go-l10n"
 	pngmetawebstrip "github.com/ideamans/go-png-meta-web-strip"
-	"github.com/ideamans/go-psnr"
 )
 
 func init() {
@@ -44,12 +40,6 @@ func init() {
 		"Failed to write optimized PNG: %v": "最適化されたPNGの書き込みに失敗: %v",
 		"Failed to stat destination file: %v": "出力ファイルの情報取得に失敗: %v",
 	})
-}
-
-type OptimizePNGInput struct {
-	SrcPath  string
-	DestPath string
-	Quality  string
 }
 
 var (
@@ -91,151 +81,3 @@ func isAcceptablePSNR(quality string, psnr float64) bool {
 	}
 }
 
-func Optimize(input OptimizePNGInput) (*OptimizePNGOutput, error) {
-	logInfo("Starting PNG optimization (quality: %s)", input.Quality)
-	output := OptimizePNGOutput{}
-
-	// Read PNG file
-	pngData, err := os.ReadFile(input.SrcPath)
-	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to read PNG file: %w"), err)
-	}
-	output.BeforeSize = int64(len(pngData))
-
-	// Create metadata manager
-	metaManager := &PNGMetaManager{}
-
-	// Check if already optimized using ReadComment
-	comment, _, err := metaManager.ReadComment(pngData)
-	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to read PNG comment: %w"), err)
-	}
-
-	// If already optimized, return early
-	if comment != nil && comment.By != "" {
-		output.AlreadyOptimized = true
-		output.AlreadyOptimizedBy = comment.By
-		logInfo("Already optimized by %s, skipping", comment.By)
-		return &output, nil
-	}
-
-	// Keep original data for PSNR comparison
-	originalData := make([]byte, len(pngData))
-	copy(originalData, pngData)
-
-	// Strip metadata using pngmetawebstrip
-	strippedData, stripResult, err := pngmetawebstrip.Strip(pngData)
-	if err != nil {
-		// stripは外部パッケージで行うのでデータエラーの区別がない
-		// しかし本質的にオンメモリのデータ処理だけなのでデータエラーとして扱う
-		output.StripError = NewDataErrorf(l10n.T("failed to strip metadata: %v"), err)
-		logWarn("Failed to strip metadata: %v", err)
-	} else {
-		output.Strip = stripResult
-		pngData = strippedData
-		logDebug("Stripped metadata - size: %s -> %s", humanize.Bytes(uint64(output.BeforeSize)), humanize.Bytes(uint64(len(pngData))))
-	}
-	output.SizeAfterStrip = int64(len(pngData))
-
-	// PngquantはPSNRにより棄却する可能性がある
-	beforePNGQuant := make([]byte, len(pngData))
-	copy(beforePNGQuant, pngData)
-
-	// Perform PNG quantization using Pngquant
-	quantizedData, err := Pngquant(pngData)
-	if err != nil {
-		// Set quantize error and continue with stripped data
-		output.PNGQuantError = err
-		logWarn("Failed to quantize: %v", err)
-	} else {
-		psnrValue, psnrErr := psnr.Compute(beforePNGQuant, quantizedData)
-		err = psnrErr
-		if err != nil {
-			return nil, NewDataErrorf(l10n.T("failed to calculate PSNR after quantization: %v"), err)
-		}
-		output.PNGQuant.PSNR = psnrValue
-		if isAcceptablePSNR(input.Quality, psnrValue) {
-			output.PNGQuant.Applied = true
-			pngData = quantizedData
-			logDebug("Applied PNGQuant - PSNR: %.2f dB, size: %s", psnrValue, humanize.Bytes(uint64(len(quantizedData))))
-		} else {
-			logDebug("Rejected PNGQuant - PSNR: %f (below threshold for quality: %s)", psnrValue, input.Quality)
-		}
-	}
-	output.SizeAfterPNGQuant = int64(len(pngData))
-
-	// Calculate final PSNR before building comment
-	finalPSNR, err := psnr.Compute(originalData, pngData)
-	if err != nil {
-		return nil, NewDataErrorf(l10n.T("failed to calculate final PSNR: %w"), err)
-	}
-
-	// Build comment with optimization information
-	comment = &LightFileComment{
-		By:       "LightFile",
-		Before:   output.BeforeSize,
-		After:    int64(len(pngData)),
-		PNGQuant: output.PNGQuant.Applied,
-		PSNR:     MaybeInf(finalPSNR),
-	}
-
-	// Calculate comment size and check if final size would exceed original
-	_, commentSizeIncrease, err := metaManager.BuildComment(comment)
-	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to build comment: %w"), err)
-	}
-
-	// Check if adding comment would make file larger than original
-	currentSize := int64(len(pngData))
-	finalSizeWithComment := currentSize + int64(commentSizeIncrease)
-	if finalSizeWithComment >= output.BeforeSize {
-		output.CantOptimize = true
-		logInfo("Cannot optimize: final size (%s) >= original size (%s)", humanize.Bytes(uint64(finalSizeWithComment)), humanize.Bytes(uint64(output.BeforeSize)))
-		return &output, nil
-	}
-
-	// Write the comment
-	commentedData, err := metaManager.WriteComment(pngData, comment)
-	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to write comment: %w"), err)
-	}
-	pngData = commentedData
-
-	// Re-calculate PSNR after adding comment to ensure it hasn't changed
-	finalPSNRAfterComment, err := psnr.Compute(originalData, pngData)
-	if err != nil {
-		return nil, NewDataErrorf(l10n.T("failed to calculate final PSNR after comment: %w"), err)
-	}
-	output.FinalPSNR = finalPSNRAfterComment
-
-	// Check PSNR threshold (infinity is always acceptable)
-	if !math.IsInf(finalPSNR, 1) && finalPSNR < PSNRThreshold {
-		output.InspectionFailed = true
-		logWarn("PSNR inspection failed: %.2f dB < %.2f dB", finalPSNR, PSNRThreshold)
-		return &output, nil
-	}
-
-	// Write the optimized PNG to destination path
-	logDebug("Writing optimized PNG")
-	err = os.WriteFile(input.DestPath, pngData, 0600)
-	if err != nil {
-		logError(l10n.T("Failed to write optimized PNG: %v"), err)
-		return nil, fmt.Errorf(l10n.T("failed to write optimized PNG: %w"), err)
-	}
-
-	// Get file size after optimization
-	destInfo, err := os.Stat(input.DestPath)
-	if err != nil {
-		logError(l10n.T("Failed to stat destination file: %v"), err)
-		return nil, fmt.Errorf(l10n.T("failed to stat destination file: %w"), err)
-	}
-	output.AfterSize = destInfo.Size()
-
-	logInfo("Optimization completed: %s -> %s (%.1f%% reduction), PSNR: %.2f dB, PNGQuant: %v",
-		humanize.Bytes(uint64(output.BeforeSize)), humanize.Bytes(uint64(output.AfterSize)),
-		float64(output.BeforeSize-output.AfterSize)/float64(output.BeforeSize)*100,
-		finalPSNRAfterComment,
-		output.PNGQuant.Applied)
-
-	return &output, nil
-}

@@ -79,13 +79,7 @@ func TestMetadata(t *testing.T) {
 				t.Errorf("Expected original iTXt presence %v, but got %v", tc.expectInternational, originalInternational)
 			}
 
-			input := OptimizePNGInput{
-				SrcPath:  inputPath,
-				DestPath: outputPath,
-				Quality:  "force",
-			}
-
-			result, err := Optimize(input)
+			result, err := runVariationOptimization(t, inputPath, outputPath, "force")
 
 			// Check error expectation
 			if tc.expectError {

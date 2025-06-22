@@ -110,11 +110,7 @@ func TestOptimize(t *testing.T) {
 				setupSrc := "testdata/optimize/psnr-will-50.png"
 				tmpOptimized := filepath.Join(tempDir, "already-optimized.png")
 
-				result, err := Optimize(OptimizePNGInput{
-					SrcPath:  setupSrc,
-					DestPath: tmpOptimized,
-					Quality:  "",
-				})
+				result, err := TestRunOptimization("", setupSrc, tmpOptimized)
 				if err != nil {
 					t.Fatalf("Failed to create already optimized file: %v", err)
 				}
@@ -127,13 +123,7 @@ func TestOptimize(t *testing.T) {
 			}
 
 			// Run optimization
-			input := OptimizePNGInput{
-				SrcPath:  srcPath,
-				DestPath: destPath,
-				Quality:  tc.quality,
-			}
-
-			result, err := Optimize(input)
+			result, err := TestRunOptimization(tc.quality, srcPath, destPath)
 
 			// Check error expectation
 			if tc.expectError {
@@ -298,13 +288,10 @@ func TestOptimize_PSNRQualityLevels(t *testing.T) {
 
 	for _, q := range qualities {
 		t.Run("quality_"+q.quality, func(t *testing.T) {
-			input := OptimizePNGInput{
-				SrcPath:  "testdata/optimize/psnr-will-44.png",
-				DestPath: filepath.Join(tempDir, "output_"+q.quality+".png"),
-				Quality:  q.quality,
-			}
+			srcPath := "testdata/optimize/psnr-will-44.png"
+			destPath := filepath.Join(tempDir, "output_"+q.quality+".png")
 
-			result, err := Optimize(input)
+			result, err := TestRunOptimization(q.quality, srcPath, destPath)
 			if err != nil {
 				t.Fatalf("Optimize failed: %v", err)
 			}
@@ -329,24 +316,16 @@ func TestOptimize_ErrorHandling(t *testing.T) {
 	tempDir := t.TempDir()
 
 	t.Run("NonExistentFile", func(t *testing.T) {
-		input := OptimizePNGInput{
-			SrcPath:  "testdata/optimize/nonexistent.png",
-			DestPath: filepath.Join(tempDir, "output.png"),
-		}
-
-		_, err := Optimize(input)
+		optimizer := NewOptimizer("")
+		_, err := optimizer.Run("testdata/optimize/nonexistent.png", filepath.Join(tempDir, "output.png"))
 		if err == nil {
 			t.Error("Expected error for non-existent file")
 		}
 	})
 
 	t.Run("InvalidDestPath", func(t *testing.T) {
-		input := OptimizePNGInput{
-			SrcPath:  "testdata/optimize/psnr-will-50.png",
-			DestPath: "/invalid/path/that/does/not/exist/output.png",
-		}
-
-		_, err := Optimize(input)
+		optimizer := NewOptimizer("")
+		_, err := optimizer.Run("testdata/optimize/psnr-will-50.png", "/invalid/path/that/does/not/exist/output.png")
 		if err == nil {
 			t.Error("Expected error for invalid destination path")
 		}
@@ -398,13 +377,7 @@ func TestOptimize_StripMetadata(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 
-	input := OptimizePNGInput{
-		SrcPath:  "testdata/optimize/with-mac-icc.png",
-		DestPath: filepath.Join(tempDir, "stripped.png"),
-		Quality:  "",
-	}
-
-	result, err := Optimize(input)
+	result, err := TestRunOptimization("", "testdata/optimize/with-mac-icc.png", filepath.Join(tempDir, "stripped.png"))
 	if err != nil {
 		t.Fatalf("Optimize failed: %v", err)
 	}
@@ -435,13 +408,7 @@ func TestOptimize_Photo(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 
-	input := OptimizePNGInput{
-		SrcPath:  "testdata/optimize/me2020.png",
-		DestPath: filepath.Join(tempDir, "photo.png"),
-		Quality:  "",
-	}
-
-	result, err := Optimize(input)
+	result, err := TestRunOptimization("", "testdata/optimize/me2020.png", filepath.Join(tempDir, "photo.png"))
 	if err != nil {
 		t.Fatalf("Optimize failed: %v", err)
 	}

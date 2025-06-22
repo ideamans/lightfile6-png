@@ -78,13 +78,13 @@ func TestOptimizeWithLogger(t *testing.T) {
 	SetLogger(testLogger)
 
 	// Run optimization on a regular PNG file
-	input := OptimizePNGInput{
-		SrcPath:  "./testdata/optimize/me2020.png",
-		DestPath: "./testdata/temp/optimized_test.png",
-		Quality:  "",
-	}
+	srcPath := "./testdata/optimize/me2020.png"
+	destPath := "./testdata/temp/optimized_test.png"
+	quality := ""
 
-	_, err := Optimize(input)
+	optimizer := NewOptimizer(quality)
+	optimizer.SetLogger(testLogger)
+	_, err := optimizer.Run(srcPath, destPath)
 	if err != nil {
 		t.Fatalf("Optimize failed: %v", err)
 	}

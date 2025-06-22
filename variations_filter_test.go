@@ -64,13 +64,7 @@ func TestFilter(t *testing.T) {
 			// This is complex as filters can vary per scanline. We'll focus on optimization behavior
 			// and assume the test files use the filters indicated by their names
 
-			input := OptimizePNGInput{
-				SrcPath:  inputPath,
-				DestPath: outputPath,
-				Quality:  "force",
-			}
-
-			result, err := Optimize(input)
+			result, err := runVariationOptimization(t, inputPath, outputPath, "force")
 
 			// Check error expectation
 			if tc.expectError {
