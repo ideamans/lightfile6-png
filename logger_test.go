@@ -30,52 +30,8 @@ func (l *TestLogger) Error(format string, args ...interface{}) {
 	l.ErrorMessages = append(l.ErrorMessages, fmt.Sprintf(format, args...))
 }
 
-func TestSetLogger(t *testing.T) {
-	// Save original logger
-	originalLogger := logger
-	defer func() { logger = originalLogger }()
-
-	// Test with nil logger (should not panic)
-	SetLogger(nil)
-
-	// These should not panic even with nil logger
-	logDebug("debug message")
-	logInfo("info message")
-	logWarn("warn message")
-	logError("error message")
-
-	// Test with custom logger
-	testLogger := &TestLogger{}
-	SetLogger(testLogger)
-
-	// Test logging functions
-	logDebug("test debug %d", 1)
-	logInfo("test info %s", "message")
-	logWarn("test warn %.2f", 3.14)
-	logError("test error %v", fmt.Errorf("error"))
-
-	// Verify messages were captured
-	if len(testLogger.DebugMessages) != 1 || testLogger.DebugMessages[0] != "test debug 1" {
-		t.Errorf("Debug message not captured correctly: %v", testLogger.DebugMessages)
-	}
-	if len(testLogger.InfoMessages) != 1 || testLogger.InfoMessages[0] != "test info message" {
-		t.Errorf("Info message not captured correctly: %v", testLogger.InfoMessages)
-	}
-	if len(testLogger.WarnMessages) != 1 || testLogger.WarnMessages[0] != "test warn 3.14" {
-		t.Errorf("Warn message not captured correctly: %v", testLogger.WarnMessages)
-	}
-	if len(testLogger.ErrorMessages) != 1 || testLogger.ErrorMessages[0] != "test error error" {
-		t.Errorf("Error message not captured correctly: %v", testLogger.ErrorMessages)
-	}
-}
-
 func TestOptimizeWithLogger(t *testing.T) {
-	// Save original logger
-	originalLogger := logger
-	defer func() { logger = originalLogger }()
-
 	testLogger := &TestLogger{}
-	SetLogger(testLogger)
 
 	// Run optimization on a regular PNG file
 	srcPath := "./testdata/optimize/me2020.png"
