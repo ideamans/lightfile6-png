@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestLogger はテスト用のLoggerインターフェース実装です。
+// TestLogger is a test implementation of the Logger interface
 type TestLogger struct {
 	DebugMessages []string
 	InfoMessages  []string
@@ -14,20 +14,20 @@ type TestLogger struct {
 	ErrorMessages []string
 }
 
-func (tl *TestLogger) Debug(format string, args ...interface{}) {
-	tl.DebugMessages = append(tl.DebugMessages, fmt.Sprintf(format, args...))
+func (l *TestLogger) Debug(format string, args ...interface{}) {
+	l.DebugMessages = append(l.DebugMessages, fmt.Sprintf(format, args...))
 }
 
-func (tl *TestLogger) Info(format string, args ...interface{}) {
-	tl.InfoMessages = append(tl.InfoMessages, fmt.Sprintf(format, args...))
+func (l *TestLogger) Info(format string, args ...interface{}) {
+	l.InfoMessages = append(l.InfoMessages, fmt.Sprintf(format, args...))
 }
 
-func (tl *TestLogger) Warn(format string, args ...interface{}) {
-	tl.WarnMessages = append(tl.WarnMessages, fmt.Sprintf(format, args...))
+func (l *TestLogger) Warn(format string, args ...interface{}) {
+	l.WarnMessages = append(l.WarnMessages, fmt.Sprintf(format, args...))
 }
 
-func (tl *TestLogger) Error(format string, args ...interface{}) {
-	tl.ErrorMessages = append(tl.ErrorMessages, fmt.Sprintf(format, args...))
+func (l *TestLogger) Error(format string, args ...interface{}) {
+	l.ErrorMessages = append(l.ErrorMessages, fmt.Sprintf(format, args...))
 }
 
 func TestSetLogger(t *testing.T) {
@@ -37,7 +37,7 @@ func TestSetLogger(t *testing.T) {
 
 	// Test with nil logger (should not panic)
 	SetLogger(nil)
-	
+
 	// These should not panic even with nil logger
 	logDebug("debug message")
 	logInfo("info message")
@@ -48,24 +48,24 @@ func TestSetLogger(t *testing.T) {
 	testLogger := &TestLogger{}
 	SetLogger(testLogger)
 
-	// Log some messages
-	logDebug("debug message %d", 1)
-	logInfo("info message %s", "test")
-	logWarn("warn message %v", true)
-	logError("error message %f", 3.14)
+	// Test logging functions
+	logDebug("test debug %d", 1)
+	logInfo("test info %s", "message")
+	logWarn("test warn %.2f", 3.14)
+	logError("test error %v", fmt.Errorf("error"))
 
-	// Verify messages were logged
-	if len(testLogger.DebugMessages) != 1 || testLogger.DebugMessages[0] != "debug message 1" {
-		t.Errorf("Expected debug message 'debug message 1', got %v", testLogger.DebugMessages)
+	// Verify messages were captured
+	if len(testLogger.DebugMessages) != 1 || testLogger.DebugMessages[0] != "test debug 1" {
+		t.Errorf("Debug message not captured correctly: %v", testLogger.DebugMessages)
 	}
-	if len(testLogger.InfoMessages) != 1 || testLogger.InfoMessages[0] != "info message test" {
-		t.Errorf("Expected info message 'info message test', got %v", testLogger.InfoMessages)
+	if len(testLogger.InfoMessages) != 1 || testLogger.InfoMessages[0] != "test info message" {
+		t.Errorf("Info message not captured correctly: %v", testLogger.InfoMessages)
 	}
-	if len(testLogger.WarnMessages) != 1 || testLogger.WarnMessages[0] != "warn message true" {
-		t.Errorf("Expected warn message 'warn message true', got %v", testLogger.WarnMessages)
+	if len(testLogger.WarnMessages) != 1 || testLogger.WarnMessages[0] != "test warn 3.14" {
+		t.Errorf("Warn message not captured correctly: %v", testLogger.WarnMessages)
 	}
-	if len(testLogger.ErrorMessages) != 1 || testLogger.ErrorMessages[0] != "error message 3.140000" {
-		t.Errorf("Expected error message 'error message 3.140000', got %v", testLogger.ErrorMessages)
+	if len(testLogger.ErrorMessages) != 1 || testLogger.ErrorMessages[0] != "test error error" {
+		t.Errorf("Error message not captured correctly: %v", testLogger.ErrorMessages)
 	}
 }
 
@@ -92,7 +92,7 @@ func TestOptimizeWithLogger(t *testing.T) {
 	// Verify logger captured the messages
 	hasStartMessage := false
 	hasSizeMessage := false
-	
+
 	for _, msg := range testLogger.InfoMessages {
 		if strings.Contains(msg, "Starting PNG optimization") {
 			hasStartMessage = true
@@ -109,7 +109,7 @@ func TestOptimizeWithLogger(t *testing.T) {
 		t.Error("Expected 'Starting PNG optimization' message")
 		t.Logf("Info messages: %v", testLogger.InfoMessages)
 	}
-	
+
 	// Check debug messages for human-readable sizes
 	hasDebugSizeMessage := false
 	for _, msg := range testLogger.DebugMessages {
@@ -118,7 +118,7 @@ func TestOptimizeWithLogger(t *testing.T) {
 			break
 		}
 	}
-	
+
 	if !hasDebugSizeMessage && !hasSizeMessage {
 		t.Error("Expected human-readable size in messages")
 		t.Logf("Debug messages: %v", testLogger.DebugMessages)

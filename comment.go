@@ -188,11 +188,11 @@ func (m *PNGMetaManager) WriteCommentString(data []byte, comment string) ([]byte
 	for _, chunk := range chunks {
 		if chunk.Type == "tEXt" {
 			// Check if this is a LightFile comment
-			textData := chunk.Data
-			nullIndex := bytes.IndexByte(textData, 0)
+			chunkData := chunk.Data
+			nullIndex := bytes.IndexByte(chunkData, 0)
 			if nullIndex != -1 {
-				keyword := string(textData[:nullIndex])
-				if keyword == "LightFile" {
+				chunkKeyword := string(chunkData[:nullIndex])
+				if chunkKeyword == "LightFile" {
 					// Skip this chunk (remove it)
 					continue
 				}

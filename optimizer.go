@@ -51,13 +51,6 @@ func (o *Optimizer) logWarn(format string, args ...interface{}) {
 	}
 }
 
-// logError logs error messages if logger is set
-func (o *Optimizer) logError(format string, args ...interface{}) {
-	if o.Logger != nil {
-		o.Logger.Error(format, args...)
-	}
-}
-
 // Run performs PNG optimization from srcPath to destPath
 func (o *Optimizer) Run(srcPath, destPath string) (*OptimizePNGOutput, error) {
 	o.logInfo("Starting PNG optimization (quality: %s)", o.Quality)
@@ -118,10 +111,10 @@ func (o *Optimizer) Run(srcPath, destPath string) (*OptimizePNGOutput, error) {
 		o.logWarn("Failed to quantize: %v", err)
 	} else {
 		// Calculate PSNR between before and after quantization
-		psnrValue, err := psnr.Compute(beforePNGQuant, quantizedData)
-		if err != nil {
-			output.PNGQuantError = NewDataErrorf(l10n.T("failed to calculate PSNR after PNGQuant: %w"), err)
-			o.logWarn("Failed to calculate PSNR after PNGQuant: %v", err)
+		psnrValue, psnrErr := psnr.Compute(beforePNGQuant, quantizedData)
+		if psnrErr != nil {
+			output.PNGQuantError = NewDataErrorf(l10n.T("failed to calculate PSNR after PNGQuant: %w"), psnrErr)
+			o.logWarn("Failed to calculate PSNR after PNGQuant: %v", psnrErr)
 		} else {
 			output.PNGQuant.PSNR = psnrValue
 			// Apply PNGQuant only if PSNR is acceptable
@@ -162,7 +155,7 @@ func (o *Optimizer) Run(srcPath, destPath string) (*OptimizePNGOutput, error) {
 	finalSizeWithComment := currentSize + int64(commentSizeIncrease)
 	if finalSizeWithComment >= output.BeforeSize {
 		output.CantOptimize = true
-		o.logInfo("Cannot optimize: final size (%s) >= original size (%s)", 
+		o.logInfo("Cannot optimize: final size (%s) >= original size (%s)",
 			humanize.Bytes(uint64(finalSizeWithComment)), humanize.Bytes(uint64(output.BeforeSize)))
 		return &output, nil
 	}
@@ -185,7 +178,7 @@ func (o *Optimizer) Run(srcPath, destPath string) (*OptimizePNGOutput, error) {
 	}
 
 	// Write the optimized PNG to destination path
-	err = os.WriteFile(destPath, pngData, 0644)
+	err = os.WriteFile(destPath, pngData, 0600)
 	if err != nil {
 		return nil, fmt.Errorf(l10n.T("failed to write optimized PNG: %w"), err)
 	}
