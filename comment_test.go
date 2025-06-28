@@ -213,6 +213,65 @@ func TestReadComment_EmptyPNG(t *testing.T) {
 	}
 }
 
+func TestReadComment_BothFormats(t *testing.T) {
+	tests := []struct {
+		name         string
+		filename     string
+		expectBy     string
+		expectBefore int64
+		expectAfter  int64
+	}{
+		{
+			name:         "Legacy format (direct JSON in tEXt)",
+			filename:     "testdata/optimize/already-lightfile.png",
+			expectBy:     "LightFile6",
+			expectBefore: 28038,
+			expectAfter:  10545,
+		},
+		{
+			name:         "Correct format (lightfile\\0JSON)",
+			filename:     "testdata/optimize/already-lightfile-truly.png",
+			expectBy:     "LightFile6",
+			expectBefore: 28038,
+			expectAfter:  10545,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			data, err := os.ReadFile(tc.filename)
+			if err != nil {
+				t.Fatalf("Failed to read test file: %v", err)
+			}
+
+			comment, rawComment, err := ReadComment(data)
+			if err != nil {
+				t.Fatalf("ReadComment failed: %v", err)
+			}
+
+			if comment == nil {
+				t.Fatal("Expected to read LightFile comment, got nil")
+			}
+
+			if comment.By != tc.expectBy {
+				t.Errorf("By = %q, want %q", comment.By, tc.expectBy)
+			}
+
+			if comment.Before != tc.expectBefore {
+				t.Errorf("Before = %d, want %d", comment.Before, tc.expectBefore)
+			}
+
+			if comment.After != tc.expectAfter {
+				t.Errorf("After = %d, want %d", comment.After, tc.expectAfter)
+			}
+
+			if rawComment == "" {
+				t.Error("Expected non-empty raw comment")
+			}
+		})
+	}
+}
+
 // Helper function to check if a string contains a substring
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && (s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || containsAt(s, substr, 1)))

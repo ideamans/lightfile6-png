@@ -85,12 +85,23 @@ func (m *PNGMetaManager) ReadComment(data []byte) (*LightFileComment, string, er
 		if chunk.Type == "tEXt" {
 			textData := chunk.Data
 
-			// tEXt format: keyword\0text
+			// Try to parse both formats:
+			// 1. Correct format: keyword\0text (e.g., "LightFile\0{JSON}")
+			// 2. Legacy incorrect format: direct JSON (e.g., "{JSON}")
+			
 			nullIndex := bytes.IndexByte(textData, 0)
 			if nullIndex == -1 {
+				// Legacy format: Try to parse entire chunk as JSON
+				var comment LightFileComment
+				err := json.Unmarshal(textData, &comment)
+				if err == nil && comment.By == "LightFile6" {
+					// Successfully parsed as legacy format
+					return &comment, string(textData), nil
+				}
 				continue
 			}
 
+			// Correct format: keyword\0text
 			keyword := string(textData[:nullIndex])
 			text := string(textData[nullIndex+1:])
 
@@ -193,6 +204,13 @@ func (m *PNGMetaManager) WriteCommentString(data []byte, comment string) ([]byte
 			if nullIndex != -1 {
 				chunkKeyword := string(chunkData[:nullIndex])
 				if chunkKeyword == "LightFile" {
+					// Skip this chunk (remove it)
+					continue
+				}
+			} else {
+				// Legacy format: check if it's a LightFile6 JSON comment
+				var comment LightFileComment
+				if json.Unmarshal(chunkData, &comment) == nil && comment.By == "LightFile6" {
 					// Skip this chunk (remove it)
 					continue
 				}

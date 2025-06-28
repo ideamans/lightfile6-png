@@ -63,8 +63,14 @@ func TestOptimize(t *testing.T) {
 			maxAfterSize:          51000, // Force mode might not reduce size much
 		},
 		{
-			name:                   "Already optimized file",
+			name:                   "Already optimized file (legacy format)",
 			inputFile:              "testdata/optimize/already-lightfile.png",
+			quality:                "",
+			expectAlreadyOptimized: true,
+		},
+		{
+			name:                   "Already optimized file (correct format)",
+			inputFile:              "testdata/optimize/already-lightfile-truly.png",
 			quality:                "",
 			expectAlreadyOptimized: true,
 		},
@@ -144,8 +150,9 @@ func TestOptimize(t *testing.T) {
 			}
 
 			if tc.expectAlreadyOptimized {
-				if result.AlreadyOptimizedBy != "LightFile" {
-					t.Errorf("AlreadyOptimizedBy = %v, want LightFile", result.AlreadyOptimizedBy)
+				// Accept both "LightFile" and "LightFile6" for backward compatibility
+				if result.AlreadyOptimizedBy != "LightFile" && result.AlreadyOptimizedBy != "LightFile6" {
+					t.Errorf("AlreadyOptimizedBy = %v, want LightFile or LightFile6", result.AlreadyOptimizedBy)
 				}
 				return // Skip other checks for already optimized files
 			}
@@ -252,6 +259,7 @@ func TestOptimize(t *testing.T) {
 			if comment == nil {
 				t.Error("Output file should have LightFile comment")
 			} else {
+				// Comment should have "LightFile" as the By field
 				if comment.By != "LightFile" {
 					t.Errorf("Comment.By = %v, want LightFile", comment.By)
 				}
