@@ -36,7 +36,7 @@ func TestPngquantNormal(t *testing.T) {
 		}
 
 		// Pngquantを実行
-		outputData, wasQuantized, err := Pngquant(inputData)
+		outputData, wasQuantized, err := PNGQuant(inputData)
 		if err != nil {
 			t.Errorf("Pngquant(inputData) = %v; want nil", err)
 		}
@@ -85,7 +85,7 @@ func TestPngquantError(t *testing.T) {
 			t.Fatalf("os.ReadFile(%s) = %v; want nil", inputPath, err)
 		}
 
-		_, _, err = Pngquant(inputData)
+		_, _, err = PNGQuant(inputData)
 
 		if err == nil {
 			t.Fatalf("Pngquant(inputData) = nil; エラーになるはず")
@@ -119,7 +119,7 @@ func TestNRGBAImage(t *testing.T) {
 			t.Fatalf("os.ReadFile(%s) = %v; want nil", inputPath, err)
 		}
 
-		outputData, wasQuantized, err := Pngquant(inputData)
+		outputData, wasQuantized, err := PNGQuant(inputData)
 		if err != nil {
 			t.Errorf("Pngquant(inputData) = %v; want nil", err)
 		}
@@ -163,7 +163,7 @@ func TestAlready8bitPng(t *testing.T) {
 			t.Errorf("input data size = %d; want %d (within 1%% tolerance)", len(inputData), tc.theSize)
 		}
 
-		outputData, wasQuantized, err := Pngquant(inputData)
+		outputData, wasQuantized, err := PNGQuant(inputData)
 		if err != nil {
 			t.Errorf("Pngquant(inputData) = %v; want nil", err)
 		}

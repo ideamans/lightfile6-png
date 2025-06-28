@@ -104,7 +104,7 @@ func (o *Optimizer) Run(srcPath, destPath string) (*OptimizePNGOutput, error) {
 	copy(beforePNGQuant, pngData)
 
 	// Perform PNG quantization using Pngquant
-	quantizedData, wasQuantized, err := Pngquant(pngData)
+	quantizedData, wasQuantized, err := PNGQuant(pngData)
 	if err != nil {
 		// Set quantize error and continue with stripped data
 		output.PNGQuantError = err

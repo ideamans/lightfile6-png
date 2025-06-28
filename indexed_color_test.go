@@ -66,7 +66,7 @@ func TestPngquantWithIndexedColor(t *testing.T) {
 			}
 
 			// Call Pngquant
-			outputData, wasQuantized, err := Pngquant(pngData)
+			outputData, wasQuantized, err := PNGQuant(pngData)
 			if err != nil {
 				t.Fatalf("Pngquant failed: %v", err)
 			}

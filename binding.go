@@ -144,7 +144,7 @@ func convertNRGBAToRGBA(src *image.NRGBA) *image.RGBA {
 	return dst
 }
 
-// Pngquant はCGO経由でlibimagequantライブラリを使用してPNG画像の色量子化を実行します。
+// PNGQuant はCGO経由でlibimagequantライブラリを使用してPNG画像の色量子化を実行します。
 // この関数は、Rustベースのpngquant実装のためのGoインターフェースを提供します。
 //
 // 量子化プロセス:
@@ -169,7 +169,7 @@ func convertNRGBAToRGBA(src *image.NRGBA) *image.RGBA {
 //   - []byte: 処理後の画像データ
 //   - bool: pngquantが適用されたかどうか（インデックスカラーの場合はfalse）
 //   - error: エラーが発生した場合
-func Pngquant(data []byte) ([]byte, bool, error) {
+func PNGQuant(data []byte) ([]byte, bool, error) {
 	sample, err := decodeRgbaPng(data)
 	if err != nil {
 		return nil, false, fmt.Errorf(l10n.T("failed to decode first in pngquant < %v"), err)
