@@ -53,6 +53,7 @@ type OptimizePNGOutput struct {
 	Strip              *pngmetawebstrip.Result
 	StripError         error
 	SizeAfterStrip     int64
+	IsIndexedColor     bool
 	PNGQuant           struct {
 		PSNR    float64
 		Applied bool

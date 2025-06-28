@@ -36,9 +36,14 @@ func TestPngquantNormal(t *testing.T) {
 		}
 
 		// Pngquantを実行
-		outputData, err := Pngquant(inputData)
+		outputData, wasQuantized, err := Pngquant(inputData)
 		if err != nil {
 			t.Errorf("Pngquant(inputData) = %v; want nil", err)
+		}
+
+		// 通常のファイルは量子化されるはず
+		if !wasQuantized {
+			t.Errorf("wasQuantized = false; want true")
 		}
 
 		if !SizesWithin1Percent(int64(len(outputData)), tc.afterSize) {
@@ -80,7 +85,7 @@ func TestPngquantError(t *testing.T) {
 			t.Fatalf("os.ReadFile(%s) = %v; want nil", inputPath, err)
 		}
 
-		_, err = Pngquant(inputData)
+		_, _, err = Pngquant(inputData)
 
 		if err == nil {
 			t.Fatalf("Pngquant(inputData) = nil; エラーになるはず")
@@ -114,9 +119,14 @@ func TestNRGBAImage(t *testing.T) {
 			t.Fatalf("os.ReadFile(%s) = %v; want nil", inputPath, err)
 		}
 
-		outputData, err := Pngquant(inputData)
+		outputData, wasQuantized, err := Pngquant(inputData)
 		if err != nil {
 			t.Errorf("Pngquant(inputData) = %v; want nil", err)
+		}
+
+		// NRGBA形式も量子化されるはず
+		if !wasQuantized {
+			t.Errorf("wasQuantized = false; want true")
 		}
 
 		// 軽量化されたデータをデコードできること
@@ -153,9 +163,14 @@ func TestAlready8bitPng(t *testing.T) {
 			t.Errorf("input data size = %d; want %d (within 1%% tolerance)", len(inputData), tc.theSize)
 		}
 
-		outputData, err := Pngquant(inputData)
+		outputData, wasQuantized, err := Pngquant(inputData)
 		if err != nil {
 			t.Errorf("Pngquant(inputData) = %v; want nil", err)
+		}
+
+		// すでに8bitのPNGは量子化されないはず
+		if wasQuantized {
+			t.Errorf("wasQuantized = true; want false")
 		}
 
 		if !SizesWithin1Percent(int64(len(outputData)), tc.theSize) {

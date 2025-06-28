@@ -165,16 +165,19 @@ func convertNRGBAToRGBA(src *image.NRGBA) *image.RGBA {
 // パレット画像の場合、すでにインデックスカラーフォーマットであるため、
 // 関数は単純に入力をそのまま返します。
 //
-// 量子化が失敗した場合にエラーを返します。
-func Pngquant(data []byte) ([]byte, error) {
+// 戻り値:
+//   - []byte: 処理後の画像データ
+//   - bool: pngquantが適用されたかどうか（インデックスカラーの場合はfalse）
+//   - error: エラーが発生した場合
+func Pngquant(data []byte) ([]byte, bool, error) {
 	sample, err := decodeRgbaPng(data)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to decode first in pngquant < %v"), err)
+		return nil, false, fmt.Errorf(l10n.T("failed to decode first in pngquant < %v"), err)
 	}
 
 	if sample == nil {
 		// すでにインデックスカラーの画像なのでそのまま返す
-		return data, nil
+		return data, false, nil
 	}
 
 	handle := C.liq_attr_create()
@@ -193,7 +196,7 @@ func Pngquant(data []byte) ([]byte, error) {
 	quantize_result := C.liq_image_quantize(input, handle, &result)
 	if quantize_result != LIQ_OK {
 		phrase := translateError(int(quantize_result))
-		return nil, fmt.Errorf(l10n.T("failed to quantize with %s (code %d)"), phrase, quantize_result)
+		return nil, false, fmt.Errorf(l10n.T("failed to quantize with %s (code %d)"), phrase, quantize_result)
 	}
 	defer C.liq_result_destroy(result)
 
@@ -229,8 +232,8 @@ func Pngquant(data []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	err = png.Encode(&buf, paletted)
 	if err != nil {
-		return nil, fmt.Errorf(l10n.T("failed to encode pngquant < %v"), err)
+		return nil, false, fmt.Errorf(l10n.T("failed to encode pngquant < %v"), err)
 	}
 
-	return buf.Bytes(), nil
+	return buf.Bytes(), true, nil
 }

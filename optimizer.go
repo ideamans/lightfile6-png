@@ -104,26 +104,33 @@ func (o *Optimizer) Run(srcPath, destPath string) (*OptimizePNGOutput, error) {
 	copy(beforePNGQuant, pngData)
 
 	// Perform PNG quantization using Pngquant
-	quantizedData, err := Pngquant(pngData)
+	quantizedData, wasQuantized, err := Pngquant(pngData)
 	if err != nil {
 		// Set quantize error and continue with stripped data
 		output.PNGQuantError = err
 		o.logWarn("Failed to quantize: %v", err)
 	} else {
-		// Calculate PSNR between before and after quantization
-		psnrValue, psnrErr := psnr.Compute(beforePNGQuant, quantizedData)
-		if psnrErr != nil {
-			output.PNGQuantError = NewDataErrorf(l10n.T("failed to calculate PSNR after PNGQuant: %w"), psnrErr)
-			o.logWarn("Failed to calculate PSNR after PNGQuant: %v", psnrErr)
+		// If the image was already indexed color (wasQuantized == false)
+		if !wasQuantized {
+			output.IsIndexedColor = true
+			pngData = quantizedData
+			o.logDebug("Image is already indexed color, PNGQuant not applied")
 		} else {
-			output.PNGQuant.PSNR = psnrValue
-			// Apply PNGQuant only if PSNR is acceptable
-			if isAcceptablePSNR(o.Quality, psnrValue) {
-				output.PNGQuant.Applied = true
-				pngData = quantizedData
-				o.logDebug("PNGQuant applied - PSNR: %.2f dB, size: %s", psnrValue, humanize.Bytes(uint64(len(pngData))))
+			// Calculate PSNR between before and after quantization
+			psnrValue, psnrErr := psnr.Compute(beforePNGQuant, quantizedData)
+			if psnrErr != nil {
+				output.PNGQuantError = NewDataErrorf(l10n.T("failed to calculate PSNR after PNGQuant: %w"), psnrErr)
+				o.logWarn("Failed to calculate PSNR after PNGQuant: %v", psnrErr)
 			} else {
-				o.logDebug("PNGQuant rejected - PSNR: %.2f dB below threshold", psnrValue)
+				output.PNGQuant.PSNR = psnrValue
+				// Apply PNGQuant only if PSNR is acceptable
+				if isAcceptablePSNR(o.Quality, psnrValue) {
+					output.PNGQuant.Applied = true
+					pngData = quantizedData
+					o.logDebug("PNGQuant applied - PSNR: %.2f dB, size: %s", psnrValue, humanize.Bytes(uint64(len(pngData))))
+				} else {
+					o.logDebug("PNGQuant rejected - PSNR: %.2f dB below threshold", psnrValue)
+				}
 			}
 		}
 	}
