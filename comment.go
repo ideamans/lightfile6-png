@@ -88,7 +88,7 @@ func (m *PNGMetaManager) ReadComment(data []byte) (*LightFileComment, string, er
 			// Try to parse both formats:
 			// 1. Correct format: keyword\0text (e.g., "LightFile\0{JSON}")
 			// 2. Legacy incorrect format: direct JSON (e.g., "{JSON}")
-			
+
 			nullIndex := bytes.IndexByte(textData, 0)
 			if nullIndex == -1 {
 				// Legacy format: Try to parse entire chunk as JSON
